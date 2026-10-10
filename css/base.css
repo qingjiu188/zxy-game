@@ -1,0 +1,180 @@
+/* base.css 全局：变量 / 深空背景 / 主题动效层 / 特效层 / 视图容器 */
+/* =========================================================
+   0. 变量 / 基础
+   ========================================================= */
+:root{
+  --bg-0:#04050c;
+  --bg-1:#080a1a;
+  --bg-2:#12082a;
+  --cyan:34,224,255;
+  --magenta:255,47,208;
+  --purple:139,92,246;
+  --mint:120,255,214;
+  /* ---- 文章页主题色（默认 = 科幻）---- */
+  --t1:34,224,255;   /* 主色 */
+  --t2:255,47,208;   /* 副色 */
+  --t3:139,92,246;   /* 辅色 */
+  --t4:120,255,214;  /* 点缀 */
+  --glass-bg:linear-gradient(160deg, rgba(20,32,66,.55), rgba(46,14,70,.34));
+  --glass-border:rgba(140,220,255,.22);
+  --radius:24px;
+  --font:"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;margin:0;padding:0;}
+body{
+  font-family:var(--font);
+  color:#e8f4ff;
+  background:var(--bg-0);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+/* ---- 四大主题：切换 body class 即可整体换肤 ---- */
+body.theme-sci-fi     {--t1:34,224,255; --t2:255,47,208; --t3:139,92,246; --t4:120,255,214;}
+body.theme-mystery    {--t1:255,64,96;  --t2:150,60,255; --t3:255,120,60;  --t4:255,190,190;}
+body.theme-warm       {--t1:255,200,120;--t2:255,150,195;--t3:180,120,255; --t4:255,235,180;}
+body.theme-adventure  {--t1:255,190,60; --t2:70,235,150; --t3:34,224,255;  --t4:255,240,140;}
+
+/* 深空背景：多层星云 + 网格 */
+.nebula{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(60% 50% at 18% 12%, rgba(var(--t1),.16), transparent 60%),
+    radial-gradient(55% 45% at 85% 20%, rgba(var(--t2),.14), transparent 62%),
+    radial-gradient(70% 60% at 50% 108%, rgba(var(--t3),.20), transparent 65%),
+    radial-gradient(40% 40% at 78% 82%, rgba(var(--t4),.10), transparent 60%),
+    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 45%, var(--bg-2) 100%);
+  transition:background 1.2s ease;
+}
+.nebula::after{
+  content:"";position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(120,200,255,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120,200,255,.045) 1px, transparent 1px);
+  background-size:64px 64px, 64px 64px;
+  mask-image:radial-gradient(circle at 50% 45%, #000 0%, transparent 78%);
+  -webkit-mask-image:radial-gradient(circle at 50% 45%, #000 0%, transparent 78%);
+  animation:gridDrift 24s linear infinite;
+}
+@keyframes gridDrift{from{background-position:0 0,0 0;}to{background-position:0 64px,64px 0;}}
+.vignette{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(circle at 50% 50%, transparent 45%, rgba(0,0,0,.55) 100%);
+}
+
+/* ---- 主题专属背景动效层（科幻/悬疑/温情/冒险 各不相同）---- */
+#theme-fx{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden;opacity:0;transition:opacity 1s ease;}
+#theme-fx.show{opacity:.32;}
+body.theme-warm #theme-fx.show{opacity:.22;}
+#theme-fx::before,#theme-fx::after{content:"";position:absolute;inset:-25%;}
+
+/* 科幻：旋转星云光带 + 星点漂移 */
+body.theme-sci-fi #theme-fx::before{
+  background:conic-gradient(from 0deg at 50% 50%, transparent 0 58%, rgba(var(--t1),.10) 74%, transparent 88%);
+  animation:spinSlow 42s linear infinite;
+}
+body.theme-sci-fi #theme-fx::after{
+  background-image:radial-gradient(circle, rgba(255,255,255,.55) 1px, transparent 1.6px);
+  background-size:130px 130px;opacity:.35;
+  animation:starDrift 70s linear infinite;
+}
+/* 悬疑：故障条纹 + 暗红光闪烁 */
+body.theme-mystery #theme-fx::before{
+  background:repeating-linear-gradient(0deg, rgba(var(--t1),.11) 0 2px, transparent 2px 8px);
+  mix-blend-mode:screen;
+  animation:glitchShift 3.6s steps(7) infinite;
+}
+body.theme-mystery #theme-fx::after{
+  background:radial-gradient(60% 50% at 50% 45%, rgba(var(--t2),.20), transparent 72%);
+  animation:flicker 2.6s steps(4) infinite;
+}
+/* 温情：柔和光晕呼吸 + 飘落光点 */
+body.theme-warm #theme-fx::before{
+  background:
+    radial-gradient(45% 40% at 28% 28%, rgba(var(--t1),.10), transparent 70%),
+    radial-gradient(42% 36% at 76% 68%, rgba(var(--t2),.08), transparent 70%);
+  animation:breatheGlow 7.5s ease-in-out infinite;
+}
+body.theme-warm #theme-fx::after{
+  background-image:radial-gradient(circle, rgba(var(--t4),.95) 1.6px, transparent 2.2px);
+  background-size:96px 96px;opacity:.5;
+  animation:fallDown 15s linear infinite;
+}
+/* 冒险：斜向能量光带流动 */
+body.theme-adventure #theme-fx::before{
+  background:repeating-linear-gradient(115deg, transparent 0 42px, rgba(var(--t1),.15) 42px 48px, transparent 48px 118px);
+  animation:bandMove 2.8s linear infinite;
+}
+body.theme-adventure #theme-fx::after{
+  background:repeating-linear-gradient(65deg, transparent 0 62px, rgba(var(--t2),.11) 62px 70px, transparent 70px 168px);
+  animation:bandMove 4.2s linear infinite reverse;
+}
+@keyframes spinSlow{to{transform:rotate(360deg);}}
+@keyframes starDrift{to{background-position:130px 130px;}}
+@keyframes glitchShift{
+  0%{transform:translateY(0) skewX(0);}20%{transform:translateY(-6px) skewX(1deg);}
+  40%{transform:translateY(4px) skewX(-1deg);}60%{transform:translateY(-2px);}80%{transform:translateY(7px);}100%{transform:translateY(0);}
+}
+@keyframes flicker{0%,100%{opacity:.55;}30%{opacity:.15;}55%{opacity:.85;}75%{opacity:.25;}}
+@keyframes breatheGlow{0%,100%{opacity:.45;transform:scale(1);}50%{opacity:.72;transform:scale(1.05);}}
+@keyframes fallDown{from{background-position:0 0;}to{background-position:60px 900px;}}
+@keyframes bandMove{from{background-position:0 0;}to{background-position:240px 0;}}
+
+/* =========================================================
+   1. 全局特效层
+   ========================================================= */
+#fx{position:fixed;inset:0;z-index:2;pointer-events:none;display:block;}
+.fx-layer{position:fixed;inset:0;z-index:60;pointer-events:none;overflow:hidden;}
+#flash{
+  opacity:0;
+  background:radial-gradient(circle at 50% 50%, rgba(255,255,255,.95), rgba(255,255,255,.25) 38%, rgba(255,255,255,0) 72%);
+  mix-blend-mode:screen;
+}
+.pulse-ring{
+  position:fixed;width:60vmax;height:60vmax;margin:-30vmax 0 0 -30vmax;
+  border-radius:50%;
+  border:1px solid rgba(var(--rc),.7);
+  background:radial-gradient(circle, rgba(var(--rc),.32), rgba(var(--rc),.06) 45%, rgba(var(--rc),0) 62%);
+  box-shadow:0 0 60px rgba(var(--rc),.45), inset 0 0 80px rgba(var(--rc),.25);
+  mix-blend-mode:screen;
+  opacity:0;
+}
+.warp-ring{
+  position:fixed;left:50%;top:50%;width:140px;height:140px;margin:-70px 0 0 -70px;
+  border-radius:50%;
+  border:2px solid rgba(34,224,255,.55);
+  box-shadow:0 0 40px rgba(34,224,255,.45), inset 0 0 40px rgba(255,47,208,.25);
+  mix-blend-mode:screen;opacity:0;
+}
+.shard{
+  position:fixed;border-radius:8px;
+  border:1px solid rgba(160,230,255,.35);
+  box-shadow:0 0 18px rgba(34,224,255,.35), inset 0 1px 0 rgba(255,255,255,.35);
+  will-change:transform,opacity;
+}
+
+/* =========================================================
+   2. 视图容器
+   ========================================================= */
+.view{
+  position:fixed;inset:0;z-index:10;
+  display:flex;flex-direction:column;
+  opacity:0;visibility:hidden;
+  overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  padding:clamp(20px,4vh,48px) clamp(16px,4vw,56px);
+}
+.view.on{opacity:1;visibility:visible;}
+.view::-webkit-scrollbar{width:6px;}
+.view::-webkit-scrollbar-thumb{background:rgba(var(--cyan),.35);border-radius:3px;}
+
+
+/* =========================================================
+   响应式（全局）
+   ========================================================= */
+@media (max-width:820px){
+  .view{padding:18px 14px 28px;}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;animation-iteration-count:1 !important;}
+}

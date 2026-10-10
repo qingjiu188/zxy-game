@@ -1,0 +1,2427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#05060f" />
+<title>郑晓银的模拟人生</title>
+<style>
+/* =========================================================
+   0. 变量 / 基础
+   ========================================================= */
+:root{
+  --bg-0:#04050c;
+  --bg-1:#080a1a;
+  --bg-2:#12082a;
+  --cyan:34,224,255;
+  --magenta:255,47,208;
+  --purple:139,92,246;
+  --mint:120,255,214;
+  /* ---- 文章页主题色（默认 = 科幻）---- */
+  --t1:34,224,255;   /* 主色 */
+  --t2:255,47,208;   /* 副色 */
+  --t3:139,92,246;   /* 辅色 */
+  --t4:120,255,214;  /* 点缀 */
+  --glass-bg:linear-gradient(160deg, rgba(20,32,66,.55), rgba(46,14,70,.34));
+  --glass-border:rgba(140,220,255,.22);
+  --radius:24px;
+  --font:"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;margin:0;padding:0;}
+body{
+  font-family:var(--font);
+  color:#e8f4ff;
+  background:var(--bg-0);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+/* ---- 四大主题：切换 body class 即可整体换肤 ---- */
+body.theme-sci-fi     {--t1:34,224,255; --t2:255,47,208; --t3:139,92,246; --t4:120,255,214;}
+body.theme-mystery    {--t1:255,64,96;  --t2:150,60,255; --t3:255,120,60;  --t4:255,190,190;}
+body.theme-warm       {--t1:255,200,120;--t2:255,150,195;--t3:180,120,255; --t4:255,235,180;}
+body.theme-adventure  {--t1:255,190,60; --t2:70,235,150; --t3:34,224,255;  --t4:255,240,140;}
+
+/* 深空背景：多层星云 + 网格 */
+.nebula{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(60% 50% at 18% 12%, rgba(var(--t1),.16), transparent 60%),
+    radial-gradient(55% 45% at 85% 20%, rgba(var(--t2),.14), transparent 62%),
+    radial-gradient(70% 60% at 50% 108%, rgba(var(--t3),.20), transparent 65%),
+    radial-gradient(40% 40% at 78% 82%, rgba(var(--t4),.10), transparent 60%),
+    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 45%, var(--bg-2) 100%);
+  transition:background 1.2s ease;
+}
+.nebula::after{
+  content:"";position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(120,200,255,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120,200,255,.045) 1px, transparent 1px);
+  background-size:64px 64px, 64px 64px;
+  mask-image:radial-gradient(circle at 50% 45%, #000 0%, transparent 78%);
+  -webkit-mask-image:radial-gradient(circle at 50% 45%, #000 0%, transparent 78%);
+  animation:gridDrift 24s linear infinite;
+}
+@keyframes gridDrift{from{background-position:0 0,0 0;}to{background-position:0 64px,64px 0;}}
+.vignette{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(circle at 50% 50%, transparent 45%, rgba(0,0,0,.55) 100%);
+}
+
+/* ---- 主题专属背景动效层（科幻/悬疑/温情/冒险 各不相同）---- */
+#theme-fx{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden;opacity:0;transition:opacity 1s ease;}
+#theme-fx.show{opacity:.32;}
+body.theme-warm #theme-fx.show{opacity:.22;}
+#theme-fx::before,#theme-fx::after{content:"";position:absolute;inset:-25%;}
+
+/* 科幻：旋转星云光带 + 星点漂移 */
+body.theme-sci-fi #theme-fx::before{
+  background:conic-gradient(from 0deg at 50% 50%, transparent 0 58%, rgba(var(--t1),.10) 74%, transparent 88%);
+  animation:spinSlow 42s linear infinite;
+}
+body.theme-sci-fi #theme-fx::after{
+  background-image:radial-gradient(circle, rgba(255,255,255,.55) 1px, transparent 1.6px);
+  background-size:130px 130px;opacity:.35;
+  animation:starDrift 70s linear infinite;
+}
+/* 悬疑：故障条纹 + 暗红光闪烁 */
+body.theme-mystery #theme-fx::before{
+  background:repeating-linear-gradient(0deg, rgba(var(--t1),.11) 0 2px, transparent 2px 8px);
+  mix-blend-mode:screen;
+  animation:glitchShift 3.6s steps(7) infinite;
+}
+body.theme-mystery #theme-fx::after{
+  background:radial-gradient(60% 50% at 50% 45%, rgba(var(--t2),.20), transparent 72%);
+  animation:flicker 2.6s steps(4) infinite;
+}
+/* 温情：柔和光晕呼吸 + 飘落光点 */
+body.theme-warm #theme-fx::before{
+  background:
+    radial-gradient(45% 40% at 28% 28%, rgba(var(--t1),.10), transparent 70%),
+    radial-gradient(42% 36% at 76% 68%, rgba(var(--t2),.08), transparent 70%);
+  animation:breatheGlow 7.5s ease-in-out infinite;
+}
+body.theme-warm #theme-fx::after{
+  background-image:radial-gradient(circle, rgba(var(--t4),.95) 1.6px, transparent 2.2px);
+  background-size:96px 96px;opacity:.5;
+  animation:fallDown 15s linear infinite;
+}
+/* 冒险：斜向能量光带流动 */
+body.theme-adventure #theme-fx::before{
+  background:repeating-linear-gradient(115deg, transparent 0 42px, rgba(var(--t1),.15) 42px 48px, transparent 48px 118px);
+  animation:bandMove 2.8s linear infinite;
+}
+body.theme-adventure #theme-fx::after{
+  background:repeating-linear-gradient(65deg, transparent 0 62px, rgba(var(--t2),.11) 62px 70px, transparent 70px 168px);
+  animation:bandMove 4.2s linear infinite reverse;
+}
+@keyframes spinSlow{to{transform:rotate(360deg);}}
+@keyframes starDrift{to{background-position:130px 130px;}}
+@keyframes glitchShift{
+  0%{transform:translateY(0) skewX(0);}20%{transform:translateY(-6px) skewX(1deg);}
+  40%{transform:translateY(4px) skewX(-1deg);}60%{transform:translateY(-2px);}80%{transform:translateY(7px);}100%{transform:translateY(0);}
+}
+@keyframes flicker{0%,100%{opacity:.55;}30%{opacity:.15;}55%{opacity:.85;}75%{opacity:.25;}}
+@keyframes breatheGlow{0%,100%{opacity:.45;transform:scale(1);}50%{opacity:.72;transform:scale(1.05);}}
+@keyframes fallDown{from{background-position:0 0;}to{background-position:60px 900px;}}
+@keyframes bandMove{from{background-position:0 0;}to{background-position:240px 0;}}
+
+/* =========================================================
+   1. 全局特效层
+   ========================================================= */
+#fx{position:fixed;inset:0;z-index:2;pointer-events:none;display:block;}
+.fx-layer{position:fixed;inset:0;z-index:60;pointer-events:none;overflow:hidden;}
+#flash{
+  opacity:0;
+  background:radial-gradient(circle at 50% 50%, rgba(255,255,255,.95), rgba(255,255,255,.25) 38%, rgba(255,255,255,0) 72%);
+  mix-blend-mode:screen;
+}
+.pulse-ring{
+  position:fixed;width:60vmax;height:60vmax;margin:-30vmax 0 0 -30vmax;
+  border-radius:50%;
+  border:1px solid rgba(var(--rc),.7);
+  background:radial-gradient(circle, rgba(var(--rc),.32), rgba(var(--rc),.06) 45%, rgba(var(--rc),0) 62%);
+  box-shadow:0 0 60px rgba(var(--rc),.45), inset 0 0 80px rgba(var(--rc),.25);
+  mix-blend-mode:screen;
+  opacity:0;
+}
+.warp-ring{
+  position:fixed;left:50%;top:50%;width:140px;height:140px;margin:-70px 0 0 -70px;
+  border-radius:50%;
+  border:2px solid rgba(34,224,255,.55);
+  box-shadow:0 0 40px rgba(34,224,255,.45), inset 0 0 40px rgba(255,47,208,.25);
+  mix-blend-mode:screen;opacity:0;
+}
+.shard{
+  position:fixed;border-radius:8px;
+  border:1px solid rgba(160,230,255,.35);
+  box-shadow:0 0 18px rgba(34,224,255,.35), inset 0 1px 0 rgba(255,255,255,.35);
+  will-change:transform,opacity;
+}
+
+/* =========================================================
+   2. 视图容器
+   ========================================================= */
+.view{
+  position:fixed;inset:0;z-index:10;
+  display:flex;flex-direction:column;
+  opacity:0;visibility:hidden;
+  overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  padding:clamp(20px,4vh,48px) clamp(16px,4vw,56px);
+}
+.view.on{opacity:1;visibility:visible;}
+.view::-webkit-scrollbar{width:6px;}
+.view::-webkit-scrollbar-thumb{background:rgba(var(--cyan),.35);border-radius:3px;}
+
+/* =========================================================
+   3. 登录页
+   ========================================================= */
+#view-login{align-items:center;justify-content:center;}
+.login-wrap{width:min(430px,100%);position:relative;}
+.login-card{
+  position:relative;
+  padding:38px 34px 32px;
+  border-radius:var(--radius);
+  background-image:linear-gradient(160deg, rgba(18,30,64,.72), rgba(46,14,72,.5));
+  backdrop-filter:blur(20px) saturate(150%);
+  -webkit-backdrop-filter:blur(20px) saturate(150%);
+  border:1px solid var(--glass-border);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.04) inset,
+    0 1px 0 rgba(255,255,255,.28) inset,
+    0 -40px 80px rgba(139,92,246,.14) inset,
+    0 24px 70px rgba(0,0,0,.55),
+    0 0 60px rgba(34,224,255,.18);
+  overflow:hidden;
+}
+/* 全息扫描线 */
+.login-card::before{
+  content:"";position:absolute;left:0;right:0;height:34%;
+  top:-40%;
+  background:linear-gradient(180deg, transparent, rgba(34,224,255,.10) 45%, rgba(255,47,208,.12) 60%, transparent);
+  animation:holoScan 5.5s cubic-bezier(.5,0,.5,1) infinite;
+  pointer-events:none;
+}
+@keyframes holoScan{0%{top:-40%;}55%{top:110%;}100%{top:110%;}}
+/* 顶部霓虹细线 */
+.login-card::after{
+  content:"";position:absolute;left:8%;right:8%;top:0;height:1px;
+  background:linear-gradient(90deg, transparent, rgba(var(--cyan),.9), rgba(var(--magenta),.9), transparent);
+  box-shadow:0 0 12px rgba(var(--cyan),.8);
+}
+.corner{position:absolute;width:22px;height:22px;border:2px solid rgba(var(--cyan),.75);pointer-events:none;filter:drop-shadow(0 0 6px rgba(var(--cyan),.7));}
+.corner.tl{left:12px;top:12px;border-right:0;border-bottom:0;border-radius:8px 0 0 0;}
+.corner.tr{right:12px;top:12px;border-left:0;border-bottom:0;border-radius:0 8px 0 0;}
+.corner.bl{left:12px;bottom:12px;border-right:0;border-top:0;border-radius:0 0 0 8px;}
+.corner.br{right:12px;bottom:12px;border-left:0;border-top:0;border-radius:0 0 8px 0;}
+
+.login-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(var(--cyan),.95);
+  padding:5px 12px;border-radius:999px;
+  border:1px solid rgba(var(--cyan),.35);
+  background:rgba(var(--cyan),.08);
+  box-shadow:0 0 18px rgba(var(--cyan),.22) inset;
+  margin-bottom:16px;
+}
+.dot{width:6px;height:6px;border-radius:50%;background:rgb(var(--cyan));box-shadow:0 0 10px rgb(var(--cyan));animation:blink 1.6s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.25;}}
+.login-title{
+  margin:0 0 6px;font-size:clamp(24px,5.4vw,32px);font-weight:800;letter-spacing:.04em;
+  background:linear-gradient(92deg,#9df3ff,#ffffff 38%,#ff9ae8 78%,#c4b5fd);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 16px rgba(var(--cyan),.55));
+}
+.login-sub{margin:0 0 26px;font-size:12.5px;color:rgba(200,225,255,.55);letter-spacing:.08em;}
+
+.field{position:relative;margin-bottom:16px;}
+.field label{
+  display:block;font-size:11px;letter-spacing:.2em;color:rgba(var(--cyan),.8);
+  margin-bottom:7px;text-transform:uppercase;
+}
+.field input{
+  width:100%;height:50px;padding:0 16px 0 44px;
+  font-size:15px;color:#eaf7ff;font-family:var(--font);letter-spacing:.06em;
+  background:rgba(8,14,32,.55);
+  border:1px solid rgba(140,200,255,.18);
+  border-radius:14px;
+  outline:none;
+  transition:border-color .25s, box-shadow .25s, background .25s;
+}
+.field input::placeholder{color:rgba(190,215,240,.3);letter-spacing:.05em;}
+.field input:focus{
+  border-color:rgba(var(--cyan),.85);
+  background:rgba(10,22,48,.72);
+  box-shadow:0 0 0 3px rgba(var(--cyan),.12), 0 0 26px rgba(var(--cyan),.4), inset 0 0 22px rgba(var(--cyan),.10);
+}
+.field .ico{
+  position:absolute;left:15px;top:38px;font-size:16px;opacity:.75;pointer-events:none;
+  filter:drop-shadow(0 0 6px rgba(var(--cyan),.6));
+}
+.field.err input{border-color:rgba(255,70,90,.85);box-shadow:0 0 0 3px rgba(255,70,90,.12),0 0 24px rgba(255,70,90,.4);}
+
+.login-btn{
+  position:relative;width:100%;height:52px;margin-top:8px;
+  border:1px solid rgba(var(--cyan),.55);border-radius:14px;
+  background:linear-gradient(100deg, rgba(34,224,255,.20), rgba(139,92,246,.28) 55%, rgba(255,47,208,.20));
+  color:#eafcff;font-size:16px;font-weight:700;letter-spacing:.28em;font-family:var(--font);
+  cursor:pointer;overflow:hidden;
+  box-shadow:0 0 24px rgba(var(--cyan),.25), inset 0 1px 0 rgba(255,255,255,.25);
+  transition:transform .18s, box-shadow .3s, letter-spacing .3s;
+}
+.login-btn:hover{
+  box-shadow:0 0 40px rgba(var(--cyan),.5), 0 0 70px rgba(var(--magenta),.25), inset 0 1px 0 rgba(255,255,255,.4);
+  transform:translateY(-1px);letter-spacing:.34em;
+}
+.login-btn:active{transform:scale(.985);}
+.login-btn::after{
+  content:"";position:absolute;top:0;bottom:0;width:38%;
+  left:-45%;
+  background:linear-gradient(100deg, transparent, rgba(255,255,255,.55), transparent);
+  transform:skewX(-18deg);
+}
+.login-btn:hover::after{animation:btnScan .85s ease-in-out;}
+@keyframes btnScan{from{left:-45%;}to{left:120%;}}
+.login-btn.busy{pointer-events:none;opacity:.75;letter-spacing:.16em;}
+
+.login-msg{
+  min-height:20px;margin:14px 0 0;text-align:center;
+  font-size:12.5px;letter-spacing:.06em;color:rgba(255,90,110,.95);
+  text-shadow:0 0 14px rgba(255,60,80,.8);
+  opacity:0;transform:translateY(-4px);transition:opacity .25s, transform .25s;
+}
+.login-msg.show{opacity:1;transform:none;}
+.login-tip{
+  margin-top:18px;text-align:center;font-size:11px;color:rgba(190,215,240,.35);letter-spacing:.14em;
+}
+@keyframes shake{
+  0%,100%{transform:translateX(0);}
+  12%{transform:translateX(-12px) rotate(-.6deg);}
+  28%{transform:translateX(11px) rotate(.5deg);}
+  45%{transform:translateX(-8px) rotate(-.35deg);}
+  62%{transform:translateX(6px);}
+  80%{transform:translateX(-3px);}
+}
+.shake{animation:shake .6s cubic-bezier(.36,.07,.19,.97);}
+
+/* =========================================================
+   4. 主页
+   ========================================================= */
+#view-home{align-items:center;justify-content:center;text-align:center;}
+.home-title{
+  margin:0;font-size:clamp(34px,8.4vw,86px);font-weight:900;line-height:1.08;letter-spacing:.03em;
+  background:linear-gradient(96deg,#7ef0ff 0%,#ffffff 26%,#ff8fe0 52%,#b9a6ff 76%,#7ef0ff 100%);
+  background-size:220% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 26px rgba(var(--cyan),.6)) drop-shadow(0 0 60px rgba(var(--magenta),.35));
+  animation:neonBreath 4.2s ease-in-out infinite, hueSlide 12s linear infinite;
+  min-height:1.2em;
+}
+@keyframes neonBreath{0%,100%{filter:drop-shadow(0 0 18px rgba(34,224,255,.45)) drop-shadow(0 0 48px rgba(255,47,208,.22));}
+  50%{filter:drop-shadow(0 0 34px rgba(34,224,255,.85)) drop-shadow(0 0 80px rgba(255,47,208,.45));}}
+@keyframes hueSlide{from{background-position:0% 50%;}to{background-position:220% 50%;}}
+.caret{display:inline-block;width:.06em;height:.85em;vertical-align:-.08em;background:rgb(var(--cyan));box-shadow:0 0 14px rgb(var(--cyan));animation:blink .9s steps(1) infinite;color:transparent;}
+.home-sub{
+  margin:20px auto 0;max-width:640px;
+  font-size:clamp(12px,2.6vw,15px);letter-spacing:.28em;color:rgba(200,225,255,.55);
+}
+.home-orbit{
+  position:relative;width:min(360px,72vw);aspect-ratio:1;margin:6px auto 34px;
+  display:grid;place-items:center;
+}
+.home-orbit i{
+  position:absolute;inset:0;border-radius:50%;border:1px solid rgba(var(--cyan),.18);
+  box-shadow:0 0 30px rgba(var(--cyan),.12) inset;
+}
+.home-orbit i:nth-child(1){animation:spin 14s linear infinite;}
+.home-orbit i:nth-child(2){inset:12%;border-color:rgba(var(--magenta),.22);animation:spin 9s linear reverse infinite;}
+.home-orbit i:nth-child(3){inset:24%;border-color:rgba(var(--purple),.28);border-style:dashed;animation:spin 20s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.home-orbit .core{
+  position:absolute;width:38%;aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.85), rgba(34,224,255,.5) 35%, rgba(139,92,246,.25) 60%, transparent 72%);
+  box-shadow:0 0 60px rgba(var(--cyan),.55);
+  animation:corePulse 3.4s ease-in-out infinite;
+}
+@keyframes corePulse{0%,100%{transform:scale(.92);opacity:.85;}50%{transform:scale(1.06);opacity:1;}}
+
+.start-btn{
+  position:relative;
+  padding:20px clamp(30px,6vw,64px);
+  font-size:clamp(16px,3.4vw,21px);font-weight:800;letter-spacing:.34em;font-family:var(--font);
+  color:#f2fdff;cursor:pointer;
+  border-radius:20px;
+  border:1px solid rgba(var(--cyan),.6);
+  background:linear-gradient(140deg, rgba(14,26,56,.6), rgba(52,16,84,.5));
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.3),
+    inset 0 -20px 40px rgba(139,92,246,.25),
+    0 0 30px rgba(var(--cyan),.35),
+    0 0 70px rgba(var(--magenta),.18);
+  overflow:hidden;
+  transition:transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .3s, letter-spacing .3s;
+}
+.start-btn:hover{
+  transform:translateY(-3px) scale(1.03);
+  letter-spacing:.42em;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45), 0 0 46px rgba(var(--cyan),.7), 0 0 110px rgba(var(--magenta),.35);
+}
+.start-btn:active{transform:scale(.98);}
+.start-btn::before{
+  content:"";position:absolute;inset:-40% -10%;
+  background:conic-gradient(from 0deg, transparent 0 70%, rgba(34,224,255,.35) 82%, rgba(255,47,208,.35) 92%, transparent 100%);
+  animation:spin 3.6s linear infinite;opacity:.7;mix-blend-mode:screen;
+}
+.start-btn span{position:relative;z-index:2;display:inline-block;text-shadow:0 0 18px rgba(var(--cyan),.8);}
+.start-btn.busy{pointer-events:none;}
+
+/* =========================================================
+   5. 内页
+   ========================================================= */
+#view-inner{align-items:stretch;}
+.inner-head{text-align:center;margin-bottom:clamp(14px,3vh,28px);flex:none;}
+.inner-title{
+  margin:0;font-size:clamp(24px,5.2vw,46px);font-weight:900;letter-spacing:.05em;
+  background:linear-gradient(94deg,#8ef3ff,#ffffff 40%,#ffa6ec 72%,#c1b0ff);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 22px rgba(var(--cyan),.55));
+  animation:neonBreath 4.6s ease-in-out infinite;
+}
+.inner-sub{margin:10px 0 0;font-size:12px;letter-spacing:.26em;color:rgba(200,225,255,.5);}
+.grid{
+  flex:1;
+  display:grid;
+  /* 卡片数量由 stories 数组决定：有文章才会生成卡片 */
+  grid-template-columns:repeat(auto-fill,minmax(260px,330px));
+  grid-auto-rows:minmax(88px,1fr);
+  justify-content:center;
+  align-content:start;
+  gap:clamp(10px,1.6vw,18px);
+  min-height:0;
+}
+.life-card{
+  position:relative;overflow:hidden;cursor:pointer;
+  border-radius:22px;
+  padding:clamp(12px,1.6vw,20px);
+  display:flex;align-items:center;gap:clamp(10px,1.4vw,16px);
+  border:1px solid rgba(var(--c),.28);
+  background:
+    linear-gradient(150deg, rgba(255,255,255,.07), rgba(255,255,255,.015) 45%),
+    linear-gradient(160deg, rgba(12,20,44,.55), rgba(38,12,62,.42));
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.22),
+    inset 0 -24px 40px rgba(var(--c),.10),
+    0 10px 30px rgba(0,0,0,.4);
+  transform-style:preserve-3d;
+  transition:transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s, border-color .3s;
+  will-change:transform;
+  animation:cardFloat 6s ease-in-out infinite;
+}
+.life-card:nth-child(3n+2){animation-delay:-2s;}
+.life-card:nth-child(3n+3){animation-delay:-4s;}
+@keyframes cardFloat{0%,100%{translate:0 -3px;}50%{translate:0 3px;}}
+.life-card::before{ /* 扫描线 */
+  content:"";position:absolute;left:0;right:0;top:-60%;height:55%;
+  background:linear-gradient(180deg, transparent, rgba(var(--c),.20), transparent);
+  opacity:0;transition:opacity .3s;pointer-events:none;
+}
+.life-card:hover::before{opacity:1;animation:cardScan 1.3s linear infinite;}
+@keyframes cardScan{from{top:-60%;}to{top:110%;}}
+.life-card::after{ /* 内高光 */
+  content:"";position:absolute;inset:0;border-radius:22px;pointer-events:none;
+  background:radial-gradient(120% 80% at 20% 0%, rgba(255,255,255,.16), transparent 55%);
+}
+.life-card:hover{
+  border-color:rgba(var(--c),.85);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.35),
+    0 0 30px rgba(var(--c),.45),
+    0 0 80px rgba(var(--c),.22),
+    0 18px 40px rgba(0,0,0,.5);
+  z-index:3;
+}
+.card-ico{
+  flex:none;
+  width:clamp(38px,4.4vw,52px);height:clamp(38px,4.4vw,52px);
+  border-radius:16px;display:grid;place-items:center;font-size:clamp(18px,2.4vw,26px);
+  background:radial-gradient(circle at 35% 30%, rgba(var(--c),.42), rgba(var(--c),.10) 70%);
+  border:1px solid rgba(var(--c),.5);
+  box-shadow:0 0 22px rgba(var(--c),.45), inset 0 0 16px rgba(var(--c),.25);
+  transition:transform .3s, box-shadow .3s;
+}
+.life-card:hover .card-ico{transform:scale(1.12) rotate(-6deg);box-shadow:0 0 34px rgba(var(--c),.8);}
+.card-txt{min-width:0;position:relative;z-index:2;}
+.card-title{
+  margin:0 0 4px;font-size:clamp(14px,1.7vw,19px);font-weight:800;letter-spacing:.05em;color:#f2fbff;
+  text-shadow:0 0 16px rgba(var(--c),.55);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.card-sub{
+  margin:0;font-size:clamp(10px,1.15vw,12.5px);letter-spacing:.14em;color:rgba(190,220,250,.55);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.card-no{
+  position:absolute;right:12px;bottom:8px;font-size:11px;letter-spacing:.2em;
+  color:rgba(var(--c),.45);font-weight:700;z-index:2;
+}
+
+/* =========================================================
+   6. 文章页（详情页）
+   ========================================================= */
+#view-article{align-items:center;padding-top:clamp(56px,10vh,90px);}
+.article-wrap{width:min(880px,100%);position:relative;}
+
+/* 阅读进度条 */
+.reading-bar{
+  position:fixed;left:0;top:0;height:3px;width:100%;z-index:45;
+  background:rgba(255,255,255,.06);
+}
+.reading-bar i{
+  display:block;height:100%;width:0%;
+  background:linear-gradient(90deg, rgb(var(--t1)), rgb(var(--t2)), rgb(var(--t4)));
+  box-shadow:0 0 14px rgba(var(--t1),.9);
+  transition:width .12s linear;
+}
+
+/* 固定返回按钮（左上角） */
+.article-back{
+  position:fixed;left:clamp(14px,3vw,34px);top:clamp(14px,3vh,28px);z-index:46;
+  display:inline-flex;align-items:center;gap:8px;
+  padding:12px 22px;border-radius:14px;cursor:pointer;font-family:var(--font);
+  font-size:13px;font-weight:700;letter-spacing:.18em;color:#eafcff;
+  border:1px solid rgba(var(--t1),.55);
+  background:linear-gradient(130deg, rgba(var(--t1),.16), rgba(255,255,255,.05));
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28), 0 0 24px rgba(var(--t1),.28);
+  transition:transform .2s, box-shadow .3s, letter-spacing .3s;
+}
+.article-back:hover{transform:translateY(-2px);letter-spacing:.26em;box-shadow:0 0 34px rgba(var(--t1),.65);}
+.article-back:active{transform:scale(.96);}
+
+/* 文章主体玻璃面板 */
+.article-panel{
+  position:relative;
+  padding:clamp(26px,4vw,52px);
+  border-radius:28px;
+  border:1px solid rgba(var(--t1),.32);
+  background:
+    linear-gradient(150deg, rgba(255,255,255,.04), transparent 42%),
+    linear-gradient(160deg, rgba(6,12,28,.88), rgba(22,7,38,.82));
+  backdrop-filter:blur(22px) saturate(140%);
+  -webkit-backdrop-filter:blur(22px) saturate(140%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.26),
+    inset 0 -50px 90px rgba(var(--t1),.12),
+    0 0 44px rgba(var(--t1),.22),
+    0 30px 80px rgba(0,0,0,.55);
+  overflow:hidden;
+}
+.article-panel::before{ /* 顶部霓虹线 */
+  content:"";position:absolute;left:6%;right:6%;top:0;height:2px;
+  background:linear-gradient(90deg, transparent, rgb(var(--t1)), rgb(var(--t2)), transparent);
+  box-shadow:0 0 18px rgba(var(--t1),.9);
+}
+.article-panel::after{ /* 内高光（置于内容后方） */
+  content:"";position:absolute;inset:0;border-radius:28px;pointer-events:none;z-index:-1;
+  background:radial-gradient(120% 60% at 18% 0%, rgba(255,255,255,.14), transparent 58%);
+}
+
+/* 头部 */
+.article-hero{text-align:center;position:relative;z-index:2;}
+.article-tag{
+  display:inline-block;margin-bottom:14px;
+  font-size:11px;letter-spacing:.28em;font-weight:700;
+  color:rgb(var(--t1));padding:5px 14px;border-radius:999px;
+  border:1px solid rgba(var(--t1),.45);background:rgba(var(--t1),.10);
+  text-shadow:0 0 12px rgba(var(--t1),.85);
+  box-shadow:0 0 18px rgba(var(--t1),.22) inset;
+}
+.article-title{
+  margin:0;font-size:clamp(30px,7vw,62px);font-weight:900;letter-spacing:.06em;line-height:1.15;
+  background:linear-gradient(94deg, rgb(var(--t1)) 0%, #ffffff 34%, rgb(var(--t2)) 68%, rgb(var(--t4)) 100%);
+  background-size:200% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 24px rgba(var(--t1),.65));
+  animation:articleHue 10s linear infinite;
+}
+@keyframes articleHue{from{background-position:0% 50%;}to{background-position:200% 50%;}}
+.article-meta{
+  margin:14px 0 0;font-size:11.5px;letter-spacing:.24em;color:rgba(200,225,255,.55);
+}
+.article-meta b{color:rgb(var(--t4));font-weight:700;}
+
+/* 角色介绍区 */
+.cast{
+  position:relative;z-index:2;
+  margin:clamp(22px,3.4vw,34px) 0 0;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:14px;
+}
+.cast-card{
+  display:flex;align-items:center;gap:14px;
+  padding:16px;border-radius:18px;
+  border:1px solid rgba(var(--t1),.26);
+  background:linear-gradient(150deg, rgba(0,0,0,.32), rgba(255,255,255,.04));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2), 0 8px 24px rgba(0,0,0,.35);
+  transition:transform .28s cubic-bezier(.2,.8,.2,1), box-shadow .3s, border-color .3s;
+}
+.cast-card:hover{
+  transform:translateY(-4px);
+  border-color:rgba(var(--t1),.7);
+  box-shadow:0 0 28px rgba(var(--t1),.35), 0 14px 30px rgba(0,0,0,.45);
+}
+.cast-card.lead{
+  border-color:rgba(var(--t1),.6);
+  background:linear-gradient(150deg, rgba(var(--t1),.14), rgba(255,255,255,.02));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28), 0 0 26px rgba(var(--t1),.22);
+}
+.avatar{
+  flex:none;width:52px;height:52px;border-radius:16px;
+  display:grid;place-items:center;font-size:22px;font-weight:800;color:#fff;
+  background:radial-gradient(circle at 35% 30%, rgba(var(--t1),.55), rgba(var(--t3),.18) 72%);
+  border:1px solid rgba(var(--t1),.55);
+  box-shadow:0 0 22px rgba(var(--t1),.5), inset 0 0 16px rgba(var(--t1),.28);
+  text-shadow:0 0 12px rgba(0,0,0,.4);
+}
+.cast-card.lead .avatar{width:60px;height:60px;font-size:26px;}
+.cast-info{min-width:0;}
+.cast-role{
+  display:inline-block;margin-bottom:5px;font-size:10px;letter-spacing:.22em;
+  padding:2px 8px;border-radius:999px;color:rgb(var(--t4));
+  border:1px solid rgba(var(--t4),.4);background:rgba(var(--t4),.10);
+}
+.cast-name{
+  margin:0 0 4px;font-size:16px;font-weight:800;letter-spacing:.06em;color:#f4fcff;
+  text-shadow:0 0 14px rgba(var(--t1),.55), 0 1px 3px rgba(0,0,0,.5);
+}
+.cast-desc{margin:0;font-size:12.5px;line-height:1.7;color:rgba(205,228,252,.78);letter-spacing:.03em;text-shadow:0 1px 3px rgba(0,0,0,.45);}
+
+/* 开头钩子 */
+.hook{
+  position:relative;z-index:2;
+  margin:clamp(24px,3.4vw,36px) 0 0;
+  padding:22px 24px 22px 58px;
+  border-radius:20px;
+  border:1px solid rgba(var(--t2),.35);
+  border-left:4px solid rgb(var(--t2));
+  background:linear-gradient(120deg, rgba(var(--t2),.12), rgba(255,255,255,.02));
+  font-size:clamp(15px,2.7vw,18px);line-height:1.9;font-weight:700;letter-spacing:.04em;
+  color:#fff;
+  text-shadow:0 0 18px rgba(var(--t2),.55);
+  box-shadow:0 0 30px rgba(var(--t2),.16) inset;
+}
+.hook::before{
+  content:"“";position:absolute;left:16px;top:2px;
+  font-size:56px;line-height:1;color:rgba(var(--t2),.75);
+  text-shadow:0 0 20px rgba(var(--t2),.8);
+}
+
+/* 正文 */
+.article-body{
+  position:relative;z-index:2;
+  margin-top:clamp(22px,3.2vw,34px);
+  padding-top:22px;
+  border-top:1px dashed rgba(var(--t1),.28);
+}
+.article-body p{
+  margin:0 0 1.05em;
+  font-size:clamp(14.5px,2.6vw,16.5px);
+  line-height:2.05;letter-spacing:.04em;
+  color:rgba(238,245,255,.94);
+  text-shadow:0 1px 2px rgba(0,0,0,.25);
+  text-indent:2em;
+}
+.article-body p:first-of-type{text-indent:0;}
+.article-body p:first-of-type::first-letter{
+  float:left;font-size:3.1em;line-height:1;font-weight:900;
+  padding:.06em .14em 0 0;color:rgb(var(--t1));
+  text-shadow:0 0 20px rgba(var(--t1),.85);
+}
+.article-body p.dialogue{
+  color:#fff;font-weight:600;
+  text-shadow:0 0 14px rgba(var(--t4),.35);
+}
+/* 章节小标题（正文中以“第X章”开头的行自动识别） */
+.article-body .chapter{
+  margin:1.8em 0 .9em;
+  font-size:clamp(17px,3vw,21px);font-weight:800;letter-spacing:.16em;
+  color:rgb(var(--t1));
+  text-shadow:0 0 18px rgba(var(--t1),.6);
+  display:flex;align-items:center;gap:12px;
+}
+.article-body .chapter::before{
+  content:"";flex:none;width:26px;height:2px;border-radius:2px;
+  background:linear-gradient(90deg, transparent, rgb(var(--t1)));
+  box-shadow:0 0 12px rgba(var(--t1),.9);
+}
+.article-body .chapter::after{
+  content:"";flex:1;height:1px;
+  background:linear-gradient(90deg, rgba(var(--t1),.55), transparent);
+}
+
+.article-foot{
+  position:relative;z-index:2;
+  margin-top:clamp(26px,4vw,40px);padding-top:22px;
+  border-top:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+}
+.article-foot .foot-tip{font-size:11px;letter-spacing:.2em;color:rgba(200,225,255,.4);}
+
+.ghost-btn{
+  padding:13px 30px;border-radius:14px;cursor:pointer;font-family:var(--font);
+  font-size:14px;font-weight:700;letter-spacing:.2em;color:#eafcff;
+  border:1px solid rgba(var(--t1),.55);
+  background:linear-gradient(120deg, rgba(var(--t1),.16), rgba(255,255,255,.04));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 0 22px rgba(var(--t1),.22);
+  transition:transform .2s, box-shadow .3s, letter-spacing .3s;
+}
+.ghost-btn:hover{transform:translateY(-2px);letter-spacing:.28em;box-shadow:0 0 34px rgba(var(--t1),.6);}
+.ghost-btn:active{transform:scale(.97);}
+.ghost-btn[hidden]{display:none;}
+
+/* =========================================================
+   7. 响应式
+   ========================================================= */
+@media (max-width:1100px){
+  .grid{grid-template-columns:repeat(auto-fill,minmax(240px,300px));}
+}
+@media (max-width:820px){
+  .view{padding:18px 14px 28px;}
+  #view-article{padding-top:66px;}
+  .grid{gap:10px;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));grid-auto-rows:minmax(74px,1fr);}
+  .life-card{border-radius:18px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:none;}
+  .card-no{display:none;}
+  .home-orbit{width:min(260px,64vw);}
+  .article-panel{border-radius:22px;padding:22px 18px;}
+  .article-back{padding:10px 16px;font-size:12px;letter-spacing:.1em;}
+  .hook{padding:18px 18px 18px 46px;}
+  .hook::before{font-size:44px;left:12px;}
+  .article-body p{line-height:1.95;}
+  .cast{grid-template-columns:1fr;}
+}
+@media (max-width:520px){
+  .grid{grid-template-columns:1fr;}
+  .life-card{padding:12px 14px;}
+  .article-foot{justify-content:center;}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;animation-iteration-count:1 !important;}
+}
+</style>
+</head>
+<body>
+
+<div class="nebula"></div>
+<div id="theme-fx"></div>
+<canvas id="fx"></canvas>
+<div class="vignette"></div>
+
+<!-- 特效层 -->
+<div class="fx-layer" id="fx-root"></div>
+<div class="fx-layer" id="flash"></div>
+
+<!-- ============ 视图 1：登录 ============ -->
+<section class="view on" id="view-login">
+  <div class="login-wrap">
+    <form class="login-card" id="login-card" autocomplete="off" novalidate>
+      <span class="corner tl"></span><span class="corner tr"></span>
+      <span class="corner bl"></span><span class="corner br"></span>
+
+      <div class="login-badge"><span class="dot"></span> SYSTEM LOGIN · 授权终端</div>
+      <h1 class="login-title">郑晓银的模拟人生</h1>
+      <p class="login-sub">SIMULATED LIFE ENGINE ／ 单人存档 · 禁止注册</p>
+
+      <div class="field" id="f-user">
+        <label for="username">账号 / ID</label>
+        <span class="ico">◈</span>
+        <input id="username" type="text" placeholder="请输入授权账号" autocomplete="off" spellcheck="false" />
+      </div>
+
+      <div class="field" id="f-pass">
+        <label for="password">密码 / KEY</label>
+        <span class="ico">◆</span>
+        <input id="password" type="password" placeholder="请输入访问密钥" autocomplete="new-password" />
+      </div>
+
+      <button class="login-btn" id="login-btn" type="submit"><span id="login-btn-text">进 入 系 统</span></button>
+      <p class="login-msg" id="login-msg"></p>
+      <!-- 安全提示：不在页面暴露任何账号 / 密码信息 -->
+      <p class="login-tip">凭授权账号与密钥进入 ／ 无注册入口</p>
+    </form>
+  </div>
+</section>
+
+<!-- ============ 视图 2：主页 ============ -->
+<section class="view" id="view-home">
+  <h1 class="home-title" id="home-title"></h1>
+  <p class="home-sub">选择一段人生，进入模拟世界</p>
+  <div class="home-orbit">
+    <i></i><i></i><i></i>
+    <div class="core"></div>
+  </div>
+  <button class="start-btn" id="start-btn"><span>开 始 游 戏</span></button>
+</section>
+
+<!-- ============ 视图 3：内页 ============ -->
+<section class="view" id="view-inner">
+  <div class="inner-head">
+    <h2 class="inner-title">郑晓银的模拟人生</h2>
+    <p class="inner-sub">SELECT A LIFE ／ 共 <span id="card-count">0</span> 条人生支线</p>
+  </div>
+  <div class="grid" id="grid"></div>
+</section>
+
+<!-- ============ 视图 4：文章页（故事详情） ============ -->
+<section class="view" id="view-article">
+  <div class="reading-bar"><i id="reading-progress"></i></div>
+  <button class="article-back" id="article-back" type="button">← 返回</button>
+  <div class="article-wrap">
+    <article class="article-panel" id="article-panel">
+      <!-- 头部：主题标签 / 文档名 / 元信息 -->
+      <header class="article-hero">
+        <span class="article-tag" id="a-tag">STORY</span>
+        <h1 class="article-title" id="a-title">文档名</h1>
+        <p class="article-meta" id="a-meta"></p>
+      </header>
+
+      <!-- 角色介绍区：主角 + 配角 -->
+      <section class="cast" id="a-cast"></section>
+
+      <!-- 开头钩子 -->
+      <blockquote class="hook" id="a-hook"></blockquote>
+
+      <!-- 正文 -->
+      <div class="article-body" id="a-body"></div>
+
+      <!-- 底部操作 -->
+      <footer class="article-foot">
+        <span class="foot-tip">— 本段人生 · 已读取完毕 —</span>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="ghost-btn" id="article-back2" type="button">← 返回列表</button>
+          <button class="ghost-btn" id="article-next" type="button" hidden>下一段人生 →</button>
+        </div>
+      </footer>
+    </article>
+  </div>
+</section>
+
+<script>
+/* =========================================================================
+ * 郑晓银的模拟人生 —— 单文件 SPA
+ * 模块：FX(Canvas 粒子系统) / Router(视图切换) / 各页面特效
+ * ========================================================================= */
+const $ = (s, r = document) => r.querySelector(s);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+
+/* =========================================================================
+ * 一、Canvas 2D 发光粒子系统
+ * ========================================================================= */
+const FX = (function () {
+  const cvs = $('#fx');
+  const ctx = cvs.getContext('2d', { alpha: true });
+
+  // 设备判定：移动端 / 小屏减少粒子
+  const isTouch = matchMedia('(hover: none)').matches || 'ontouchstart' in window;
+  const isSmall = window.innerWidth < 820;
+  const MOBILE = isTouch || isSmall;
+  const MAX_P = MOBILE ? 48 : 130;          // 粒子上限
+  const DPR = Math.min(window.devicePixelRatio || 1, MOBILE ? 1.6 : 2);
+
+  /* 调色板：0-4 基础色，5-9 为各文章主题专属色 */
+  const PALETTE = [
+    [34, 224, 255],   // 0 青蓝
+    [255, 47, 208],   // 1 品红
+    [139, 92, 246],   // 2 紫
+    [120, 255, 214],  // 3 薄荷
+    [235, 245, 255],  // 4 白
+    [255, 64, 96],    // 5 暗红（悬疑）
+    [255, 200, 120],  // 6 暖黄（温情）
+    [255, 150, 195],  // 7 柔粉（温情）
+    [255, 190, 60],   // 8 金橙（冒险）
+    [70, 235, 150]    // 9 翠绿（冒险）
+  ];
+  /* 主题 → 粒子主色索引 + 运动特性 */
+  const THEME_CI = {
+    'sci-fi':    [0, 2, 3, 4],
+    'mystery':   [5, 1, 2, 4],
+    'warm':      [6, 7, 4, 3],
+    'adventure': [8, 9, 0, 4]
+  };
+  let theme = 'sci-fi';
+
+  // 预渲染发光精灵（避免使用 shadowBlur，性能更好）
+  const SPRITES = PALETTE.map(c => {
+    const s = 64, cv = document.createElement('canvas');
+    cv.width = cv.height = s;
+    const g = cv.getContext('2d');
+    const grd = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+    grd.addColorStop(0.00, rgba(c, 1));
+    grd.addColorStop(0.18, rgba(c, 0.75));
+    grd.addColorStop(0.45, rgba(c, 0.22));
+    grd.addColorStop(1.00, rgba(c, 0));
+    g.fillStyle = grd;
+    g.beginPath(); g.arc(s / 2, s / 2, s / 2, 0, Math.PI * 2); g.fill();
+    return cv;
+  });
+
+  let W = 0, H = 0;
+  const P = [];          // 常驻粒子
+  const bits = [];       // 临时爆发 / 汇聚粒子
+  const waves = [];      // 冲击波
+  const mouse = { x: -9999, y: -9999, active: false };
+  let hoverAt = null;    // {x,y} 卡片悬停吸附点
+  let suck = null;       // {x,y,until} 强吸引（吸入）
+  let warp = 0, warpTarget = 0;
+  let t = 0, last = performance.now();
+
+  /* ---------- 尺寸 ---------- */
+  function resize() {
+    W = window.innerWidth; H = window.innerHeight;
+    cvs.width = Math.floor(W * DPR);
+    cvs.height = Math.floor(H * DPR);
+    cvs.style.width = W + 'px';
+    cvs.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+
+  /* ---------- 创建粒子 ---------- */
+  function makeP(x, y) {
+    return {
+      x: x ?? Math.random() * W,
+      y: y ?? Math.random() * H,
+      px: 0, py: 0,
+      vx: (Math.random() - .5) * .6,
+      vy: (Math.random() - .5) * .6,
+      r: 0.7 + Math.random() * (MOBILE ? 1.6 : 2.3),
+      a0: 0.35 + Math.random() * 0.55,
+      a: 1,
+      ci: Math.random() < .55 ? 0 : (Math.random() < .5 ? 1 : (Math.random() < .5 ? 2 : (Math.random() < .6 ? 3 : 4))),
+      ph: Math.random() * Math.PI * 2,
+      freq: 0.008 + Math.random() * 0.02
+    };
+  }
+  function initParticles() {
+    P.length = 0;
+    for (let i = 0; i < MAX_P; i++) P.push(makeP());
+  }
+
+  /* ---------- 更新 ---------- */
+  function update(dt) {
+    t += dt;
+    const cx = W / 2, cy = H / 2;
+    const suckOn = suck && performance.now() < suck.until;
+
+    for (const p of P) {
+      p.px = p.x; p.py = p.y;
+      p.ph += 0.012 * dt;
+
+      // 1) 自由漂移（正弦扰动）
+      p.vx += Math.cos(p.ph) * 0.020 * dt;
+      p.vy += Math.sin(p.ph * 1.3) * 0.020 * dt;
+
+      // 1.5) 文章主题影响粒子运动与闪烁
+      if (warp < 0.05) {
+        if (theme === 'warm') {                       // 温情：缓慢飘落
+          p.vy += 0.011 * dt;
+          p.vx += Math.sin(t * 0.02 + p.ph) * 0.014 * dt;
+        } else if (theme === 'adventure') {           // 冒险：横向能量流
+          p.vx += 0.018 * dt;
+        } else if (theme === 'mystery') {             // 悬疑：随机故障闪烁
+          if (Math.random() < 0.0035) p.a0 *= 0.25;
+          if (Math.random() < 0.0035) p.a0 = Math.min(0.95, p.a0 * 1.6 + 0.05);
+        }
+      }
+
+      // 2) 鼠标：吸引 + 绕行 + 轻微拖尾
+      if (mouse.active && warp < 0.05) {
+        const dx = mouse.x - p.x, dy = mouse.y - p.y;
+        const d2 = dx * dx + dy * dy, R = MOBILE ? 160 : 230;
+        if (d2 < R * R && d2 > 4) {
+          const d = Math.sqrt(d2), f = 1 - d / R;
+          const nx = dx / d, ny = dy / d;
+          p.vx += nx * f * 0.30 * dt;
+          p.vy += ny * f * 0.30 * dt;
+          p.vx += -ny * f * 0.55 * dt;   // 切向绕行
+          p.vy += nx * f * 0.55 * dt;
+        }
+      }
+
+      // 3) 卡片悬停：轻微吸附
+      if (hoverAt && warp < 0.05) {
+        const dx = hoverAt.x - p.x, dy = hoverAt.y - p.y;
+        const d = Math.hypot(dx, dy) || 1;
+        if (d < 260) {
+          const f = (1 - d / 260) * 0.55;
+          p.vx += dx / d * f * dt;
+          p.vy += dy / d * f * dt;
+        }
+      }
+
+      // 4) 点击吸入（进入卡片）：强吸引
+      if (suckOn) {
+        const dx = suck.x - p.x, dy = suck.y - p.y;
+        const d = Math.hypot(dx, dy) || 1;
+        const f = Math.min(3.2, 240 / d) * 1.15;
+        p.vx += dx / d * f * dt;
+        p.vy += dy / d * f * dt;
+        p.vx *= 0.90; p.vy *= 0.90;
+      }
+
+      // 5) 冲击波：环形外推
+      for (const w of waves) {
+        const dx = p.x - w.x, dy = p.y - w.y;
+        const d = Math.hypot(dx, dy) || 1;
+        const diff = Math.abs(d - w.r);
+        if (diff < w.thick) {
+          const f = (1 - diff / w.thick) * (1 - w.r / w.max) * 3.4;
+          p.vx += dx / d * f * dt;
+          p.vy += dy / d * f * dt;
+        }
+      }
+
+      // 6) 曲速：从中心向外加速拉伸
+      if (warp > 0.02) {
+        const dx = p.x - cx, dy = p.y - cy;
+        const d = Math.hypot(dx, dy) || 1;
+        const f = warp * (0.9 + d / Math.max(W, H) * 6);
+        p.vx += dx / d * f * dt;
+        p.vy += dy / d * f * dt;
+      }
+
+      // 阻尼 + 限速
+      const damp = warp > 0.02 ? 0.985 : 0.945;
+      p.vx *= damp; p.vy *= damp;
+      const sp = Math.hypot(p.vx, p.vy), lim = warp > 0.02 ? 60 : 8;
+      if (sp > lim) { p.vx = p.vx / sp * lim; p.vy = p.vy / sp * lim; }
+
+      p.x += p.vx * dt; p.y += p.vy * dt;
+
+      // 越界处理（曲速时从中心重生，形成隧道流）
+      const m = 60;
+      if (p.x < -m || p.x > W + m || p.y < -m || p.y > H + m) {
+        if (warp > 0.4) {
+          const ang = Math.random() * Math.PI * 2, rr = Math.random() * 40 + 6;
+          p.x = cx + Math.cos(ang) * rr; p.y = cy + Math.sin(ang) * rr;
+          p.px = p.x; p.py = p.y;
+          p.vx = Math.cos(ang) * (2 + Math.random() * 4);
+          p.vy = Math.sin(ang) * (2 + Math.random() * 4);
+        } else {
+          p.x = (p.x + W + m * 2) % (W + m * 2) - m;
+          p.y = (p.y + H + m * 2) % (H + m * 2) - m;
+          p.px = p.x; p.py = p.y;
+        }
+      }
+      // 闪烁
+      p.a = p.a0 * (0.72 + 0.28 * Math.sin(t * p.freq * 6));
+    }
+
+    // 冲击波推进
+    for (let i = waves.length - 1; i >= 0; i--) {
+      const w = waves[i];
+      w.r += w.speed * dt;
+      if (w.r > w.max) waves.splice(i, 1);
+    }
+
+    // 临时粒子
+    for (let i = bits.length - 1; i >= 0; i--) {
+      const b = bits[i];
+      b.life -= dt;
+      if (b.mode === 'in') {                    // 汇聚：向目标加速
+        const dx = b.tx - b.x, dy = b.ty - b.y;
+        const d = Math.hypot(dx, dy) || 1;
+        b.vx += dx / d * 1.4 * dt;
+        b.vy += dy / d * 1.4 * dt;
+        if (d < 14) b.life = Math.min(b.life, 4);
+      } else {
+        b.vx *= 0.955; b.vy *= 0.955;
+      }
+      b.px = b.x; b.py = b.y;
+      b.x += b.vx * dt; b.y += b.vy * dt;
+      if (b.life <= 0) bits.splice(i, 1);
+    }
+  }
+
+  /* ---------- 绘制 ---------- */
+  function draw() {
+    // 淡出上一帧（保留透明，形成拖尾）
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = 'rgba(0,0,0,0.20)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'lighter';
+
+    // 常驻粒子
+    for (const p of P) {
+      const c = PALETTE[p.ci], sp = SPRITES[p.ci], size = p.r * 8;
+      if (warp > 0.05) {
+        // 曲速：拉成星线
+        const dx = p.x - p.px, dy = p.y - p.py;
+        ctx.globalAlpha = Math.min(1, p.a * (0.5 + warp * 0.6));
+        ctx.strokeStyle = rgba(c, 0.55);
+        ctx.lineWidth = Math.max(0.8, p.r * 0.85);
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(p.x - dx * (1 + warp * 7), p.y - dy * (1 + warp * 7));
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+      } else {
+        // 拖尾
+        ctx.globalAlpha = p.a * 0.28;
+        ctx.strokeStyle = rgba(c, 0.5);
+        ctx.lineWidth = Math.max(0.6, p.r * 0.7);
+        ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(p.px, p.py); ctx.lineTo(p.x, p.y); ctx.stroke();
+      }
+      ctx.globalAlpha = Math.min(1, p.a * (warp > 0.05 ? 0.85 : 1));
+      ctx.drawImage(sp, p.x - size / 2, p.y - size / 2, size, size);
+    }
+
+    // 临时粒子
+    for (const b of bits) {
+      const alpha = Math.max(0, b.life / b.ttl);
+      const c = PALETTE[b.ci], sp = SPRITES[b.ci], size = b.r * 8;
+      ctx.globalAlpha = alpha * 0.5;
+      ctx.strokeStyle = rgba(c, 0.6);
+      ctx.lineWidth = Math.max(0.8, b.r * 0.8);
+      ctx.beginPath(); ctx.moveTo(b.px, b.py); ctx.lineTo(b.x, b.y); ctx.stroke();
+      ctx.globalAlpha = alpha;
+      ctx.drawImage(sp, b.x - size / 2, b.y - size / 2, size, size);
+    }
+
+    // 冲击波环
+    for (const w of waves) {
+      const k = 1 - w.r / w.max;
+      ctx.globalAlpha = k * 0.9;
+      ctx.strokeStyle = rgba(PALETTE[w.ci], 0.75 * k);
+      ctx.lineWidth = 2.2 * k + 0.4;
+      ctx.beginPath(); ctx.arc(w.x, w.y, w.r, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = k * 0.35;
+      ctx.strokeStyle = rgba(PALETTE[w.ci], 0.35 * k);
+      ctx.lineWidth = 10 * k;
+      ctx.beginPath(); ctx.arc(w.x, w.y, w.r * 0.94, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  /* ---------- 主循环 ---------- */
+  function frame(now) {
+    const dt = Math.min(3, (now - last) / 16.667) || 1;
+    last = now;
+    warp += (warpTarget - warp) * 0.05 * dt;
+    if (suck && now > suck.until) suck = null;
+    update(dt);
+    draw();
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- 对外 API ---------- */
+  const API = {
+    init() {
+      resize(); initParticles();
+      window.addEventListener('resize', () => { resize(); }, { passive: true });
+      // 鼠标 / 触摸
+      window.addEventListener('mousemove', e => {
+        mouse.x = e.clientX; mouse.y = e.clientY; mouse.active = true;
+      }, { passive: true });
+      window.addEventListener('mouseleave', () => { mouse.active = false; });
+      window.addEventListener('touchmove', e => {
+        const tp = e.touches[0];
+        if (tp) { mouse.x = tp.clientX; mouse.y = tp.clientY; mouse.active = true; }
+      }, { passive: true });
+      // 点击冲击波
+      window.addEventListener('pointerdown', e => {
+        mouse.x = e.clientX; mouse.y = e.clientY; mouse.active = true;
+        API.shock(e.clientX, e.clientY);
+      }, { passive: true });
+      requestAnimationFrame(frame);
+    },
+    /** 冲击波：粒子向外散开后缓慢恢复 */
+    shock(x, y) {
+      waves.push({ x, y, r: 6, max: Math.max(W, H) * 0.62, speed: 13, thick: 78, ci: Math.random() < .5 ? 0 : 1 });
+      API.burst(x, y, MOBILE ? 10 : 20);
+    },
+    /** 爆发粒子 */
+    burst(x, y, n = 40, ci = null) {
+      n = Math.min(n, MOBILE ? 26 : 90);
+      for (let i = 0; i < n; i++) {
+        const a = Math.random() * Math.PI * 2, s = 2 + Math.random() * (ci === null ? 9 : 6);
+        bits.push({
+          x, y, px: x, py: y,
+          vx: Math.cos(a) * s, vy: Math.sin(a) * s,
+          r: 0.8 + Math.random() * 2.2,
+          ci: ci ?? (Math.random() < .5 ? 0 : (Math.random() < .5 ? 1 : (Math.random() < .6 ? 2 : 4))),
+          life: 40 + Math.random() * 60, ttl: 100, mode: 'out', tx: x, ty: y
+        });
+      }
+    },
+    /** 汇聚粒子（吸入卡片） */
+    converge(x, y, n = 46) {
+      n = Math.min(n, MOBILE ? 22 : 80);
+      const R = Math.min(W, H) * 0.55;
+      for (let i = 0; i < n; i++) {
+        const a = Math.random() * Math.PI * 2, rr = R * (0.45 + Math.random() * 0.55);
+        const bx = x + Math.cos(a) * rr, by = y + Math.sin(a) * rr;
+        bits.push({
+          x: bx, y: by, px: bx, py: by,
+          vx: -Math.cos(a) * 3, vy: -Math.sin(a) * 3,
+          r: 0.7 + Math.random() * 1.8, ci: Math.random() < .5 ? 0 : (Math.random() < .4 ? 1 : 2),
+          life: 40 + Math.random() * 34, ttl: 74, mode: 'in', tx: x, ty: y
+        });
+      }
+    },
+    /** 强吸引点（吸入效果），持续 ms */
+    suckAt(x, y, ms = 620) { suck = { x, y, until: performance.now() + ms }; },
+    /** 卡片悬停吸附点 */
+    setHover(x, y) { hoverAt = (x == null) ? null : { x, y }; },
+    /** 曲速隧道 0~1 */
+    setWarp(v) { warpTarget = v; },
+    getWarp() { return warp; },
+    /**
+     * 切换文章主题：重染粒子颜色并改变运动特性
+     * @param {"sci-fi"|"mystery"|"warm"|"adventure"} name
+     */
+    setTheme(name) {
+      theme = THEME_CI[name] ? name : 'sci-fi';
+      const ci = THEME_CI[theme];
+      for (const p of P) {
+        if (Math.random() < 0.72) p.ci = ci[(Math.random() * ci.length) | 0];
+        // 恢复被故障效果改过的亮度
+        p.a0 = 0.35 + Math.random() * 0.55;
+      }
+    },
+    get mobile() { return MOBILE; }
+  };
+  return API;
+})();
+
+/* =========================================================================
+ * 二、DOM 特效小工具（白光 / 光环 / 曲速环 / 碎裂）
+ * ========================================================================= */
+const fxRoot = $('#fx-root');
+const flashEl = $('#flash');
+
+function flash(color = '255,255,255', dur = 760) {
+  flashEl.style.background =
+    `radial-gradient(circle at 50% 50%, rgba(${color},.95), rgba(${color},.28) 36%, rgba(${color},0) 70%)`;
+  flashEl.animate(
+    [{ opacity: 0 }, { opacity: 1, offset: .16 }, { opacity: 0 }],
+    { duration: dur, easing: 'ease-out' }
+  );
+}
+
+/** 在指定坐标产生径向光环 */
+function pulseRing(x, y, color = '34,224,255', dur = 900, scale = 1) {
+  const d = document.createElement('div');
+  d.className = 'pulse-ring';
+  d.style.left = x + 'px';
+  d.style.top = y + 'px';
+  d.style.setProperty('--rc', color);
+  d.style.width = d.style.height = (60 * scale) + 'vmax';
+  d.style.margin = (-30 * scale) + 'vmax 0 0 ' + (-30 * scale) + 'vmax';
+  fxRoot.appendChild(d);
+  const an = d.animate(
+    [
+      { transform: 'scale(.12)', opacity: 0 },
+      { transform: 'scale(.5)', opacity: .95, offset: .25 },
+      { transform: 'scale(1.35)', opacity: 0 }
+    ],
+    { duration: dur, easing: 'cubic-bezier(.16,.8,.24,1)' }
+  );
+  an.finished.then(() => d.remove()).catch(() => d.remove());
+}
+
+/** 曲速隧道：多重同心环 */
+function warpTunnel() {
+  for (let i = 0; i < 7; i++) {
+    const d = document.createElement('div');
+    d.className = 'warp-ring';
+    d.style.borderColor = i % 2 ? 'rgba(255,47,208,.5)' : 'rgba(34,224,255,.55)';
+    fxRoot.appendChild(d);
+    const an = d.animate(
+      [
+        { transform: 'scale(.15)', opacity: 0 },
+        { transform: 'scale(1.2)', opacity: .95, offset: .22 },
+        { transform: 'scale(9)', opacity: 0 }
+      ],
+      { duration: 1000, delay: i * 80, easing: 'cubic-bezier(.3,.7,.2,1)' }
+    );
+    an.finished.then(() => d.remove()).catch(() => d.remove());
+  }
+}
+
+/**
+ * 玻璃碎裂：把登录卡片切成 cols×rows 碎片并向外炸开
+ */
+function shatter(el, cols = 7, rows = 5) {
+  const rect = el.getBoundingClientRect();
+  const bg = getComputedStyle(el).backgroundImage || 'linear-gradient(160deg, rgba(18,30,64,.9), rgba(46,14,72,.7))';
+  const cw = rect.width, ch = rect.height;
+  const fw = cw / cols, fh = ch / rows;
+  const cx = rect.left + cw / 2, cy = rect.top + ch / 2;
+  const frags = [];
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const f = document.createElement('div');
+      f.className = 'shard';
+      const ox = c * fw, oy = r * fh;
+      Object.assign(f.style, {
+        left: (rect.left + ox) + 'px',
+        top: (rect.top + oy) + 'px',
+        width: fw + 'px',
+        height: fh + 'px',
+        backgroundImage: bg,
+        backgroundSize: cw + 'px ' + ch + 'px',
+        backgroundPosition: (-ox) + 'px ' + (-oy) + 'px'
+      });
+      fxRoot.appendChild(f);
+      frags.push({ el: f, ox, oy });
+    }
+  }
+
+  // 原卡片立刻隐藏
+  el.style.transition = 'none';
+  el.style.opacity = '0';
+
+  frags.forEach(({ el: f, ox, oy }) => {
+    const fx = rect.left + ox + fw / 2, fy = rect.top + oy + fh / 2;
+    const dx = fx - cx, dy = fy - cy;
+    const d = Math.hypot(dx, dy) || 1;
+    const dist = 90 + Math.random() * 260;
+    const an = f.animate(
+      [
+        { transform: 'translate(0,0) rotate(0deg) scale(1)', opacity: 1, filter: 'brightness(1)' },
+        {
+          transform: `translate(${dx / d * dist * .5}px, ${dy / d * dist * .5}px) rotate(${(Math.random() - .5) * 90}deg) scale(1.25)`,
+          opacity: .95, filter: 'brightness(2.2)', offset: .22
+        },
+        {
+          transform: `translate(${dx / d * dist}px, ${dy / d * dist + 60}px) rotate(${(Math.random() - .5) * 220}deg) scale(.25)`,
+          opacity: 0, filter: 'brightness(.6)'
+        }
+      ],
+      { duration: 780 + Math.random() * 420, delay: Math.random() * 90, easing: 'cubic-bezier(.2,.75,.3,1)', fill: 'forwards' }
+    );
+    an.finished.then(() => f.remove()).catch(() => f.remove());
+  });
+  return { cx, cy };
+}
+
+/* =========================================================================
+ * 三、视图路由
+ * ========================================================================= */
+const views = {
+  login: $('#view-login'),
+  home: $('#view-home'),
+  inner: $('#view-inner'),
+  article: $('#view-article')
+};
+let currentView = 'login';
+
+function showView(name) {
+  Object.entries(views).forEach(([k, v]) => {
+    v.classList.toggle('on', k === name);
+    v.style.opacity = ''; v.style.transform = ''; v.style.filter = '';
+  });
+  clearAnims(views[name]);
+  currentView = name;
+}
+/** 清除元素上残留的 WAAPI 动画（避免 fill:forwards 状态堆积） */
+function clearAnims(el) {
+  if (el && el.getAnimations) el.getAnimations().forEach(a => { try { a.cancel(); } catch (e) {} });
+}
+/** 出场：隐藏并清理内联样式 */
+function hideView(el) {
+  el.classList.remove('on');
+  el.style.opacity = ''; el.style.transform = ''; el.style.filter = ''; el.style.pointerEvents = '';
+  clearAnims(el);
+}
+
+/* =========================================================================
+ * 四、登录页逻辑
+ * ========================================================================= */
+const loginCard = $('#login-card');
+const userInput = $('#username');
+const passInput = $('#password');
+const loginBtn = $('#login-btn');
+const loginBtnText = $('#login-btn-text');
+const loginMsg = $('#login-msg');
+const fUser = $('#f-user'), fPass = $('#f-pass');
+
+/* 凭证不明文存储在页面上：源码中只保留编码值，校验时解码比对。
+   注意：这是纯前端固定校验，仅用于演示，不具备任何真实安全性。 */
+const _ENC_USER = 'enh5';   // base64 → zxy
+const _ENC_PASS = 'MDAx';   // base64 → 001
+const dec = s => { try { return atob(s); } catch (e) { return ''; } };
+const VALID_USER = dec(_ENC_USER);
+const VALID_PASS = dec(_ENC_PASS);
+let logging = false;
+
+loginCard.addEventListener('submit', e => { e.preventDefault(); doLogin(); });
+loginBtn.addEventListener('click', e => { e.preventDefault(); doLogin(); });
+
+function showError(msg) {
+  loginMsg.textContent = msg;
+  loginMsg.classList.add('show');
+  loginCard.classList.remove('shake');
+  void loginCard.offsetWidth;
+  loginCard.classList.add('shake');
+  fUser.classList.add('err'); fPass.classList.add('err');
+  setTimeout(() => {
+    loginMsg.classList.remove('show');
+    fUser.classList.remove('err'); fPass.classList.remove('err');
+  }, 2600);
+}
+
+async function doLogin() {
+  if (logging) return;
+  const u = userInput.value.trim().toLowerCase();
+  const p = passInput.value.trim();
+
+  if (u !== VALID_USER || p !== VALID_PASS) {
+    showError('账号或密码错误');
+    return;
+  }
+
+  logging = true;
+  loginBtn.classList.add('busy');
+  loginBtnText.textContent = '身 份 验 证 中';
+  loginMsg.classList.remove('show');
+
+  // 按钮充能光
+  pulseRing(innerWidth / 2, innerHeight / 2, '34,224,255', 700, .5);
+  await sleep(560);
+  loginBtnText.textContent = '验 证 通 过';
+  FX.burst(innerWidth / 2, innerHeight / 2, 40);
+
+  await loginSuccess();
+}
+
+async function loginSuccess() {
+  const { cx, cy } = shatter(loginCard, FX.mobile ? 5 : 7, FX.mobile ? 4 : 5);
+
+  await sleep(140);
+  flash('255,255,255', 900);                 // 白光扩散
+  pulseRing(cx, cy, '34,224,255', 1000, .9);
+  FX.burst(cx, cy, FX.mobile ? 50 : 110, 4); // 粒子爆发
+  FX.burst(cx, cy, 40, 0);
+
+  // 登录页整体粒子化消散
+  views.login.animate(
+    [
+      { opacity: 1, filter: 'blur(0px)', transform: 'scale(1)' },
+      { opacity: 0, filter: 'blur(14px)', transform: 'scale(1.18)' }
+    ],
+    { duration: 620, easing: 'cubic-bezier(.4,0,.6,1)', fill: 'forwards' }
+  );
+
+  await sleep(520);
+  hideView(views.login);
+  // 恢复登录卡片（便于调试 / 再次进入）
+  loginCard.style.transition = '';
+  loginCard.style.opacity = '';
+  loginBtn.classList.remove('busy');
+  loginBtnText.textContent = '进 入 系 统';
+  logging = false;
+
+  enterHome();
+}
+
+/* =========================================================================
+ * 五、主页：打字机标题 + 曲速穿越
+ * ========================================================================= */
+const homeTitle = $('#home-title');
+const HOME_TEXT = '郑晓银的模拟人生';
+
+function typeTitle() {
+  homeTitle.innerHTML = '';
+  const caret = document.createElement('span');
+  caret.className = 'caret';
+  caret.textContent = ' ';
+  let i = 0;
+  const timer = setInterval(() => {
+    if (i >= HOME_TEXT.length) {
+      clearInterval(timer);
+      setTimeout(() => caret.remove(), 2600);
+      return;
+    }
+    homeTitle.insertBefore(document.createTextNode(HOME_TEXT[i]), caret);
+    i++;
+  }, 130);
+}
+
+async function enterHome() {
+  showView('home');
+  typeTitle();
+  views.home.animate(
+    [
+      { opacity: 0, transform: 'scale(.86)', filter: 'blur(24px)' },
+      { opacity: 1, transform: 'scale(1)', filter: 'blur(0px)' }
+    ],
+    { duration: 900, easing: 'cubic-bezier(.16,1,.3,1)' }
+  );
+  FX.setWarp(0);
+}
+
+/* ---- 开始游戏：星际穿越 ---- */
+const startBtn = $('#start-btn');
+let warping = false;
+startBtn.addEventListener('click', async () => {
+  if (warping) return;
+  warping = true;
+  startBtn.classList.add('busy');
+  startBtn.querySelector('span').textContent = '曲 速 引 擎 充 能';
+
+  const r = startBtn.getBoundingClientRect();
+  pulseRing(r.left + r.width / 2, r.top + r.height / 2, '34,224,255', 700, .6);
+  FX.converge(innerWidth / 2, innerHeight / 2, FX.mobile ? 24 : 60); // 粒子向中心汇聚
+  await sleep(620);
+
+  startBtn.querySelector('span').textContent = '穿 越 中';
+  // 1) 粒子拉伸成星线
+  FX.setWarp(1);
+  // 2) 曲速隧道
+  warpTunnel();
+  await sleep(240);
+  // 3) 径向模糊 + 镜头推进
+  views.home.animate(
+    [
+      { opacity: 1, transform: 'scale(1) translateZ(0)', filter: 'blur(0px)' },
+      { opacity: .85, transform: 'scale(1.35)', filter: 'blur(6px)', offset: .45 },
+      { opacity: 0, transform: 'scale(3.2)', filter: 'blur(26px)' }
+    ],
+    { duration: 1000, easing: 'cubic-bezier(.55,0,.85,.35)', fill: 'forwards' }
+  );
+  await sleep(560);
+  // 4) 白光闪过
+  flash('235,250,255', 900);
+  FX.burst(innerWidth / 2, innerHeight / 2, FX.mobile ? 40 : 90, 4);
+  await sleep(320);
+
+  hideView(views.home);
+  startBtn.classList.remove('busy');
+  startBtn.querySelector('span').textContent = '开 始 游 戏';
+  warping = false;
+
+  enterInner();
+  // 曲速缓慢收敛
+  setTimeout(() => FX.setWarp(0), 400);
+});
+
+/* =========================================================================
+ * 六、故事（文章）数据 + 主题配置
+ * -------------------------------------------------------------------------
+ * ★ 后期新增文章：只需要在 stories 数组里再加一个对象即可，
+ *   内页会自动生成对应卡片，文章页会自动按 theme 换肤。
+ * ★ theme 可选：sci-fi(科幻) / mystery(悬疑) / warm(温情) / adventure(冒险)
+ * ========================================================================= */
+const THEMES = {
+  'sci-fi':    { name: '科幻', label: 'SCI-FI',    color: '34,224,255'  },
+  'mystery':   { name: '悬疑', label: 'MYSTERY',   color: '255,64,96'   },
+  'warm':      { name: '温情', label: 'WARM',      color: '255,200,120' },
+  'adventure': { name: '冒险', label: 'ADVENTURE', color: '255,190,60'  }
+};
+
+const stories = [
+  {
+    id: 1,
+    title: '囚她',
+    subtitle: '豪门囚爱 · 三年复仇',
+    icon: '⛓️',
+    theme: 'mystery',                 // 暗红 / 紫黑 + 故障闪烁
+    hook: '三年前，她把他的真心当众踩碎；三年后，他买下了她的整个家族，然后用一把指纹锁，把她关进了自己的世界。',
+    protagonist: {
+      name: '郑晓银',
+      personality: '张扬跋扈，骄傲到不肯承认动心。习惯用伤害掩饰害怕——她怕先动心的那个人，先被扔掉。'
+    },
+    supporting: [
+      {
+        name: '龙傲天',
+        personality: '清冷孤傲，隐忍到极致。被当众羞辱后崛起为复仇者，爱与恨都极端，唯一恐惧的是她再次消失。'
+      },
+      {
+        name: '龙父',
+        personality: '暴戾寡言，是龙傲天原生家庭里最深的一道伤口，也是他所有屈辱的源头。'
+      }
+    ],
+    content: `郑晓银第一次见到龙傲天，是在他转学来的第三天。
+
+他穿着洗得发白的蓝衬衫，站在讲台边，脊背挺得笔直。贫困生，特招生，全校第一。班主任介绍他时，语气里带着一种小心翼翼的同情。而郑晓银坐在最后一排，翘着腿，下巴搁在交叠的手臂上，眯着眼看了他三秒。
+
+然后她笑了。
+
+“这个资助生，”她转头对同桌说，声音不大不小，刚好让前排几个人回头，“我要了。”
+
+追求龙傲天，对郑晓银来说是一场游戏。她买下他打工的咖啡店，让他不用再端盘子；她以家族名义设了专项奖学金，“恰好”覆盖他所有的费用；她赶走所有试图靠近他的女生，在食堂里当众挽住他的胳膊，对所有人宣告：“龙傲天是我的人。”
+
+龙傲天起初是冷的。他拒绝她的钱，拒绝她的车，拒绝她递过来的所有东西。可郑晓银像一团烧不尽的火，笑着往他怀里钻，雨天给他撑伞，深夜给他送热牛奶，在他被父亲打伤的后背上偷偷抹药。她从不问他的过去，只在某个黄昏，在空荡荡的教室里，从背后抱住他，轻声说：“龙傲天，你可以不用那么坚强的。”
+
+他僵住了。从小到大，没有人对他说过这句话。
+
+他转过身，看着她。她的眼睛很亮，带着一种理所当然的笃定，像在说——在我面前，你可以碎。
+
+龙傲天信了。他把所有从未示人的伤口、所有暗夜里独自吞咽的屈辱、所有关于逃离原生家庭的渴望，全部捧到她面前。他以为那是救赎。
+
+直到那个派对。
+
+郑晓银的生日宴，半个城的豪门都来了。龙傲天穿着她买给他的西装，站在人群边缘，手里攥着一个小盒子。里面是他攒了三个月家教钱买的一条细链子，银的，很便宜。他想，她会喜欢——因为她说过，她什么都不缺，就缺真心。
+
+派对高潮时，郑晓银走上二楼的台阶。
+
+她手里举着手机，屏幕被投影到大厅的巨幕上。龙傲天的声音从音响里传出来，带着少年人笨拙的真诚：“郑晓银，我不知道你喜欢我什么，但我会努力……配得上你。”
+
+全场安静了一秒，然后是哄笑。
+
+龙傲天站在原地，血液倒流。
+
+郑晓银踩着高跟鞋走下来，每一步都像踩在他脊梁上。她走到他面前，歪着头，用近乎天真的残忍说：“龙傲天，你是不是傻？我怎么可能喜欢你？”
+
+她凑到他耳边，气息如兰：
+
+“我只是……想看看你爱我的样子有多可笑。”
+
+世界安静了。笑声像隔了一层水。他没有哭，没有闹，只是站了很久。然后他笑了。
+
+那笑容让郑晓银第一次感到了一丝寒意。
+
+他说：“好。郑晓银，我记住了。”
+
+龙傲天退学了。没有告别，没有回头，像从未存在过一样，从郑晓银的世界里彻底消失。
+
+三年后，傲天科技横空出世。
+
+创始人龙傲天，二十五岁，杀伐果断，是财经杂志上最冷峻的面孔。而郑家的企业因战略失误和神秘力量的狙击，正陷入前所未有的危机，被迫出售核心资产。
+
+竞标会那天，郑晓银代表郑家出席。她走进会议室，看见长桌尽头坐着的男人，脚步顿了一下。
+
+龙傲天。
+
+他穿着黑色西装，袖扣是低调的银灰色，和三年前判若两人。他抬眼看她，目光平静得像看一个陌生人。
+
+“郑小姐，请坐。”
+
+竞标毫无悬念。散会后，郑晓银转身要走，被他叫住。
+
+“郑小姐。”他的声音从背后传来，不紧不慢，“三年前你买下了我的尊严。三年后，我买下了你的整个家族。”
+
+他走到她面前，俯下身，用只有两个人能听到的声音说：
+
+“现在，你归我了。”
+
+郑晓银被囚在城郊的一栋别墅里。
+
+整面墙的单向玻璃，智能锁，监控无死角。龙傲天给她最好的物质，却剥夺她所有的自由：没收手机，切断网络，禁止外出。她摔碎了三个花瓶，他没生气，只是把领带松了松，说：“继续。你每闹一次，我就让你家的股价跌一个点。”
+
+她扬起手要打他，手腕被他握住。不重，但挣不开。
+
+“郑晓银，”他看着她，眼里没有任何温度，“你教会了我一个道理——感情可以用权力来衡量。现在，轮到我给你上课了。”
+
+她冷笑：“你关得住我的人，关不住我的心。”
+
+他松开手，退后一步，嘴角勾起一个没有温度的弧度：“我从来没想关你的心。我要的是——你哪儿也去不了，只能看着我。”
+
+然后他转身走了。门锁落下的声音，像一记耳光。
+
+第一次逃跑，是在被囚的第十天。郑晓银趁佣人送饭时打翻托盘，从厨房后门冲了出去。她跑过草坪，翻过铁栅栏，赤脚踩在碎石上，脚底渗出血来也不肯停。她看见公路了，心跳如擂鼓。
+
+然后一辆黑色轿车无声无息地停在她面前。
+
+车窗降下，龙傲天坐在后座，手里端着一杯咖啡，像等了她很久。
+
+“跑够了？”
+
+她喘着气，恨恨地盯着他。他下车，走到她面前，低头看见她流血的脚，皱了皱眉，弯下腰，把她横抱起来。
+
+“放开我！”
+
+“你再动，”他低头看了她一眼，“我就把你锁在卧室里，窗户也封上。”
+
+她不动了。他抱她回别墅，亲自给她上药。整个过程沉默得可怕。药水碰到伤口时她疼得抽气，他的手顿了一下，动作放轻了。
+
+“龙傲天，”她忽然开口，“你到底想要什么？”
+
+他没抬头，继续缠纱布：“我要你哪里都去不了。”
+
+“然后呢？”
+
+他沉默了。
+
+然后？然后他也不知道。他只知道，每天晚上他必须确认她睡在隔壁房间才能合眼；每次她逃跑被抓回来，他都要在书房坐一整夜，反复看手机里那张三年前派对上她笑着羞辱他的照片。屏幕的光照着他的脸，像一尊没有温度的雕塑。
+
+他要什么？他要她留在身边。可她也留下了，他仍然夜夜惊醒，梦见她又消失了。
+
+他恨她。可更恨的是——他发现自己依然爱她。
+
+三个月后，郑晓银病了。
+
+高烧，四十度不退。迷迷糊糊中她抓住他的手，喊了一声“傲天”，带着哭腔，像三年前还没学会残忍时的样子。
+
+龙傲天整个人僵住了。
+
+他守了她一夜。天亮时她烧退了，睁开眼，发现他坐在床边的地板上，背靠着床，领带松了，眼眶发红。
+
+“龙傲天……”
+
+“别说话。”他哑着嗓子打断她，转过身，跪在床边，额头抵着她的手背。
+
+“三年前你说，想看看我爱你的样子有多可笑。”他的声音闷闷的，像忍了很久终于碎掉，“我现在告诉你——不可笑。一点都不好笑。我爱你的样子，我自己都觉得恶心。所以我才要把你关起来。因为我控制不了自己去爱你，那我至少能控制你。”
+
+他抬起头，眼里全是红血丝，像一个赌上所有的疯子。
+
+“所以你别想跑。你跑一次，我追一次。你跑一辈子，我追一辈子。”
+
+郑晓银看着他。三年来第一次，她看清了他眼里的东西——不是恨。是恐惧。恐惧失去她，恐惧自己还爱她，恐惧这一切只是一场更漫长的羞辱。
+
+她的眼眶忽然湿了。
+
+“龙傲天，”她的声音很轻，“你傻不傻。”
+
+他看着她。
+
+“我当年说的话，”她别过脸，声音像从牙缝里挤出来的，“是假的。”
+
+他僵住了。
+
+“我说想看看你爱我的样子有多可笑——是假的。我是怕。怕你真的爱我，怕我也爱你，怕我郑晓银这辈子第一次动心，然后被扔掉。”
+
+她转回头，眼泪终于掉下来。
+
+“所以我先扔了你。”
+
+别墅安静得只剩下两个人的呼吸声。
+
+龙傲天看着她，看了很久很久。然后他抬起手，用拇指擦掉她脸上的泪。动作很轻，像碰一件易碎的瓷器。
+
+“郑晓银，”他的声音哑得几乎听不清，“你欠我的，这辈子都还不清。”
+
+“那就下辈子接着还。”
+
+他低下头，额头抵着她的额头。
+
+“你说的。”
+
+她闭上眼。
+
+“嗯。我说的。”
+
+窗外，铁栅栏的影子拉得很长。监控的红点还在闪，门锁还是指纹的。可这栋别墅里，第一次有了温度。`
+  },
+
+  /* =======================================================================
+   * 第二篇：《替身千金：陈钰丽的半生疯魔》
+   * 主题：warm（暖黄 / 粉紫、柔和光晕、飘落粒子）——追妻火葬场与迟来的温柔
+   * ======================================================================= */
+  {
+    id: 2,
+    title: '替身千金：陈钰丽的半生疯魔',
+    subtitle: '替身新娘 · 马甲掉光 · 追妻火葬场',
+    icon: '🪞',
+    theme: 'warm',
+    hook: '五年后，国际医学峰会的聚光灯下，那个被他亲手签了离婚协议、又被他认定早已死去的女人，牵着两个孩子对他微笑：“陈总，我们认识吗？”',
+    protagonist: {
+      name: '郑晓银',
+      personality: '隐忍清醒，爱得义无反顾，也走得干干净净。被顶替身份、被当成替身都不曾低头，唯独不肯把伤疤再交到同一个人手里第二次。'
+    },
+    supporting: [
+      {
+        name: '陈钰丽',
+        personality: '冷厉偏执，认错了救命恩人，也认错了自己的心。用三年错过、五年追逐、半生疯魔，才学会怎么爱人。'
+      },
+      {
+        name: '梁馨月',
+        personality: '楚楚可怜的白月光。捡到一条项链便冒领了救命之恩，温柔底下全是算计，最终谎言败露、身败名裂。'
+      },
+      {
+        name: '张植菲',
+        personality: '顶替真千金身份的“假货”。贪婪成性，被揭穿后狗急跳墙，把刀口对准了两个孩子。'
+      },
+      {
+        name: '沈砚',
+        personality: '温柔稳妥的守护者。在郑晓银最狼狈的五年里替她撑起半边天，被孩子唤作“爹地”，却从不越界一步。'
+      },
+      {
+        name: '郑念钰 / 郑思银',
+        personality: '一对龙凤胎，哥哥护妹、妹妹粘人。是他们把母亲眼里熄灭的光，一点一点重新点亮。'
+      }
+    ],
+    content: `后来世人皆知，陈家那位冷厉半生的陈钰丽，疯了。
+
+他散尽千亿家财，清空所有人脉，独守江景顶楼。落地窗前日日摆着两副碗筷，一副他用，一副等一个再也不会回来的人。他学会了煮她爱喝的莲子羹，学会了在雷雨天替空气关窗，学会了把"对不起"三个字磨成午夜梦回时的自言自语。
+
+可那个教他学会温柔、学会低头、学会爱人的郑晓银，早已消失在人海，查无音信。
+
+世人皆叹陈钰丽疯癫痴情，无人知晓，郑晓银曾爱得义无反顾、遍体鳞伤。
+
+郑晓银嫁进陈家那日，暴雨倾盆。
+
+陈钰丽没来，只让助理送来一纸契约：三年替身妻子，各取所需。她签了。因为郑家说，不嫁，就把养父母欠下的债，一分不少全算在她头上。
+
+她明明是郑家真千金，却被张植菲顶了身份，成了那个不受宠的"假货"。而陈钰丽心里，早有一个白月光——梁馨月。他少年溺水，被一个女孩救起，醒来只看见站在岸边的梁馨月，便认错了恩人。郑晓银眼睛有三分像她，于是被娶来当替身。
+
+婚后，他从不碰她，只在醉酒后喊"清雅"。
+
+她熬汤、挡酒、替他挨董事会的刁难，在满堂冷眼里替他把体面一寸寸捡回来。她以为石头总能焐热。
+
+直到梁馨月回国。
+
+那天陈家家宴，梁馨月一袭白裙，楚楚可怜。陈钰丽当众牵住她的手，转头对郑晓银说："你该让位了。"
+
+更狠的还在后面。梁馨月查出肾衰竭，陈钰丽把一份协议推到她面前："你配型成功，捐一颗肾给她。签了离婚协议，我给你一个亿。"
+
+郑晓银脸色惨白。
+
+她口袋里揣着刚拿到的孕检单——龙凤胎，六周。
+
+她抬起头看着陈钰丽，忽然笑了："陈总，肾我不捐，婚我离。"
+
+她签下离婚协议，烧掉孕检单，当晚从医院"假死"消失。空荡荡的病床上只留下一件外套，陈钰丽站在那里，心口第一次塌了一块。他以为她闹脾气，等了三天、三个月、三年，直到五年后，依然找不到人。
+
+五年后，国际医学峰会。
+
+神秘神医"银针"首次露面，一身黑色礼服，清冷从容。记者围堵时，两个萌宝冲上台，一左一右抱住她的腿："妈咪，沈叔叔说今晚带我们去吃冰淇淋！"
+
+男孩叫郑念钰，女孩叫郑思银。
+
+陈钰丽坐在台下，手里的酒杯碎了。玻璃扎进掌心，他浑然不觉。那张脸，是郑晓银。那两个孩子，眉眼像极了他。
+
+晚宴上，郑晓银以珠宝设计师"Silver"的身份捐出"星月"项链，又被曝出是海外财阀失散多年的继承人。马甲一层层掉，全场哗然。
+
+陈钰丽堵住她，声音发颤："郑晓银，孩子是不是我的？"
+
+她淡淡看他一眼："陈总，我们认识吗？"
+
+龙凤胎躲到沈砚身后，男孩探出半个脑袋："叔叔，你别凶我妈咪，我爹地是沈砚。"
+
+陈钰丽几乎疯了。当晚偷偷做 DNA，结果：亲子关系 99.99%。
+
+他开始追妻。送岛、送股、送命。郑晓银不理。
+
+梁馨月慌了——她根本不是救命恩人。当年把陈钰丽从水里拖上岸的是郑晓银，她只是捡了那条项链，冒认了身份。
+
+事情败露那晚，陈钰丽翻出旧档案：少年溺水时，救他的女孩手腕上有一道银针疤痕。
+
+而郑晓银的手腕上，正有那道疤。
+
+陈钰丽跪在雨里："晓银，我错了。"
+
+郑晓银撑着伞，眼神平静："陈钰丽，你爱的从来是幻想。我不是替身，我是郑晓银。"
+
+后来张植菲狗急跳墙，绑走了龙凤胎，逼他交出陈氏股权。废弃仓库里，陈钰丽替郑晓银挡下一刀，血染衬衫。他拼死把孩子护在身后，哑声说："别怕，爹地在。"
+
+那一刻，郑晓银终于红了眼。
+
+她救回了他，也救回了那个困在雨里五年的自己。
+
+梁馨月和张植菲入狱，陈家洗牌。
+
+可救回，不等于回头。
+
+陈钰丽把陈氏一半股权转到她名下，跪在婚礼上："从前我眼瞎，以后命给你。"
+
+郑晓银没有接那枚戒指，只把两个孩子轻轻推到他面前。
+
+"陈钰丽，你欠我的，不是钱，不是命，是那五年里每一个我独自撑过的夜。"
+
+她带走了孩子，也带走了他余生所有的光。
+
+后来她去了没有他的城市，开医馆，做珠宝，偶尔在雨夜想起他。不是不痛，是痛过太多次，便不敢再痛。
+
+她头顶永无阴雨，再无软肋，亦无归期。她设计出惊艳世界的《重生》系列，却再没设计过第二枚婚戒。
+
+而陈钰丽把顶楼改成了纪念馆，墙上挂满她的照片，桌上摆着她没带走的那枚银针。他每日对着空气说一句"早安"，说一句"晚安"。佣人常见他深夜站在窗前，喃喃自语："晓银，今天没下雨，我记得关窗了。"
+
+龙凤胎每年被沈砚带来一次，站在门口喊"爹地"。陈钰丽蹲下身，想抱又不敢抱，只把脸埋在孩子肩头，闷声问："你们妈咪……今天开心吗？"
+
+郑念钰用力点头："妈咪笑得可好看了。沈叔叔说，那叫释怀。"
+
+陈钰丽笑了，笑着笑着，眼泪砸在地上。
+
+他余生学会的所有温柔，都用在了回忆她这件事上。
+
+世人只道陈钰丽疯魔半生，为一个不爱他的女人散尽家财、孤独终老。无人知晓，郑晓银曾在无数个深夜，把陈钰丽的名字写了又划，划了又写，纸页背面全是干涸的泪痕。
+
+她不是不爱了，是不敢再爱了。
+
+误会一场，错过一生。双向奔赴的爱意，终究败给了嘴硬与猜忌。
+
+而陈钰丽，用余生的疯魔，替当年的自己，偿了那笔迟到了五年的债。
+
+只是那个教他学会爱的人，早已在某个没有他的清晨，独自走完了所有伤口，活成了不需要他的模样。`
+  },
+
+  /* =======================================================================
+   * 第三篇：《夜莺坠于灰蓝之海》
+   * 主题：sci-fi（蓝青霓虹 / 星云粒子 / 科技网格）——末世、源粒子、契约召唤
+   * ======================================================================= */
+  {
+    id: 3,
+    title: '夜莺坠于灰蓝之海',
+    subtitle: '末世黎明 · 契约召唤 · 灰蓝深海',
+    icon: '🌊',
+    theme: 'sci-fi',
+    hook: '她用指尖的血在空中划开一道伤口般的符文，唤来的不是救兵——而是一个统御百万丧尸的怪物。他赤足落在城墙上，温柔地问她：“我的晓银，你瘦了。”',
+    protagonist: {
+      name: '郑晓银',
+      personality: '黎明城首领，冷静决绝，独断到近乎残忍。习惯把所有人算进计划里，唯独把自己算成代价；嘴硬、手稳，从不肯承认她也会怕。'
+    },
+    supporting: [
+      {
+        name: '张静茹',
+        personality: '丧尸皇，苍白得像死人，温柔得像情话。他能用一次响指让尸潮退去，却只在她面前卸下皇的模样；她消失后，他把疯癫熬成了永恒的平静。'
+      },
+      {
+        name: '万梓茵',
+        personality: '首席研究员，理性克制，用数据记录一切。她看见了所有征兆却来不及阻止，最后替郑晓银守住了这个重建的世界。'
+      },
+      {
+        name: '副官 · 将军',
+        personality: '从城头传令的副官，到新世界议会里的将军。忠诚、实干，是这部末世史里唯一一个始终没变的人。'
+      }
+    ],
+    content: `第一章：召唤
+
+源粒子风暴在黎明城上空肆虐，灰蓝色的雾霭把月光染成一片诡异的深海。
+
+郑晓银站在城墙上，银白色的高马尾被狂风撕扯成一面猎猎作响的旗帜。她低头看着城墙下那片蠕动的黑暗——数以万计的丧尸如潮水般涌来，最前方那只三米高的变异体每撞击一次合金闸门，整面城墙都在震颤。
+
+“首领！三号闸门承重已过载！”副官的声音被淹没在嘶吼里。
+
+郑晓银没有回头。她抬起右手，牙齿咬破指尖，血珠在风暴中悬浮了一瞬，然后被她迅速划入空中。银色的符文轨迹在夜幕中绽开，像一道撕裂黑暗的伤口。
+
+空气中响起玻璃碎裂般的脆响。
+
+他来了。
+
+最先出现的是一双脚，赤足，苍白得近乎透明，悬浮在虚空之中。然后是黑色长袍的下摆，在风暴里翻飞如鸦翼。最后是那张脸——精致得像瓷器，苍白得像死人，嘴角却挂着一个温柔到诡异的笑容。
+
+张静茹歪了歪头，灰蓝色的瞳孔里映着整座黎明城的灯火。
+
+“又受伤了。”他的目光落在她指尖未愈的伤口上，声音轻得像叹息，“我的晓银。”
+
+他抬起手，轻轻打了个响指。
+
+所有丧尸同时停止攻击。那只三米高的变异体还保持着撞击的姿势，然后像被无形的线牵引着，缓缓转身。尸潮如退潮般向后涌去，整齐划一地消失在废墟深处，仿佛刚才那场足以吞没城市的灾难，只是一场幻觉。
+
+张静茹落在郑晓银面前，赤足踩在冰冷的城砖上。他向前走了一步，冰凉的手指抚过她的脸颊。
+
+“你瘦了。”
+
+郑晓银后退一步，右手已经按在腰间的枪柄上：“召唤时间还有九分钟。滚。”
+
+“嘴硬。”他低笑，身体突然前倾，凑近她耳边。他的呼吸带着源粒子的寒意，拂过她耳廓，“你刚才召唤我的时候，心跳快了 0.3 秒。”
+
+他顿了顿，声音里浮起一种令人毛骨悚然的愉悦：“你在期待什么？”
+
+回应他的，是郑晓银拔枪抵住他额头的动作。枪口紧贴着他苍白的皮肤，而她握枪的手稳得纹丝不动。
+
+张静茹没有躲。他甚至向前倾了倾，让枪口更深地陷进眉心。他的眼睛始终没有离开她的脸——那里面流转着灰蓝色的源粒子，像一片沉溺了无数秘密的深海。
+
+“开枪的话，”他微笑，“契约会强制中断。但你知道的，我不会死。”
+
+“我知道。”
+
+“那为什么不开枪？”
+
+郑晓银沉默了三秒，然后收回枪，别在腰后，转身走向城内。
+
+“九分钟还没到。”她说，声音冷得像淬了冰，“跟我来，前线需要重新布防。”
+
+张静茹站在原地，看着她的背影。月光下，他脸上的笑容消失了片刻，露出一种近乎贪婪的神情——想把那个背影，一寸一寸刻进眼睛里。
+
+然后他跟上她，赤足踩过城砖，悄无声息。
+
+城墙另一侧，万梓茵靠在箭垛上，脚边趴着三只圆滚滚的奶蛙。她浅褐色的眼睛穿过夜色注视着这一幕，手指无意识地摩挲着怀表边缘。
+
+“记下来。”她低声对副官说，“首领召唤时瞳孔会放大 0.2 毫米。召唤结束后，她的心率恢复速度比上次快了四秒。”
+
+副官疑惑：“大人，这些数据……”
+
+“很重要。”万梓茵打断他，目光从远处收回，落在脚边咕咕叫的奶蛙上，“非常重要。”
+
+远处，张静茹突然回头，朝她的方向看了一眼。隔着两百米的距离和混乱的源粒子风暴，万梓茵却清楚地看见了那个笑容。
+
+温柔。无害。甚至带着一丝礼貌。
+
+可她后背的汗毛瞬间竖了起来。
+
+那笑容里没有任何攻击性，纯粹得像陌生人偶然对视时的善意。可正是这种“正常”，让万梓茵感到前所未有的恐惧。
+
+因为一个统御百万丧尸的皇，不该用这种眼神看一个人类。
+
+除非……他看的不是同类，是猎物。
+
+第二章：奶蛙部落
+
+奶蛙部落的驻地藏在地下溶洞里，入口被源粒子干扰器覆盖，从外界完全无法感知。
+
+郑晓银沿着溶洞通道向下走，肩头还残留着召唤阵的银色余光。通道两侧，圆滚滚的奶蛙排成两列，咕咕叫着目送她经过。这些看似人畜无害的小东西，每一只都能以音爆的速度撞碎钢板。
+
+“晓银。”万梓茵的声音从溶洞深处传来。
+
+她走出通道，眼前豁然开朗。地下穹顶被源粒子灯照亮，十二只奶蛙正在场地中央训练。它们叠罗汉般摞在一起，光芒闪烁后融合成一个三米高的肌肉蛙人，一拳轰出，测试用的钢板应声碎成粉末。
+
+“他来了？”万梓茵递过一杯热茶。动作自然流畅，好像只是在和旧友闲聊。可郑晓银注意到，她指尖在杯壁上敲了两下——那是她们约定的暗号，意思是“有重要发现”。
+
+“嗯。”郑晓银接过茶，抿了一口。
+
+“我分析了过去七次召唤的数据。”万梓茵走到全息投影前，指尖划过，一张复杂的图表舒展开来，“每次召唤后，你体内的源粒子浓度会上升 0.7%。而正常异能者接触丧尸皇的污染源，上升速度是这个的十倍。”
+
+郑晓银端着茶杯的手没有动。
+
+“他在通过契约给你输送什么。”万梓茵转过身，浅褐色的眼睛在投影的蓝光里格外锐利，“或者……他在用这种方式标记你。就像野兽用气味圈占领地。”
+
+“我知道。”郑晓银放下茶杯，“但我需要他的力量。黎明城的防线，撑不过下一次尸潮。”
+
+“所以你在饮鸩止渴。”万梓茵叹了口气。
+
+她走到郑晓银面前，犹豫了一瞬，然后伸手掀起她的袖子。郑晓银没有阻止。手背上，银色的印记正在隐隐发烫，光芒像呼吸一样一明一暗。
+
+“还有一件事。”万梓茵的声音低了下去，“我对比了你第一次和最近一次召唤后的细胞样本。你的端粒长度……增加了。”
+
+溶洞里安静得只剩奶蛙的咕咕声。
+
+“他在延长你的寿命。”万梓茵松开她的手腕，“也可能是缩短。我无法确定。但有一点可以确定——他对你的影响，已经超出了‘召唤兽’的范畴。”
+
+郑晓银沉默了很久。她低头看着手背上的银色印记，想起召唤时他凑近耳边说的那句话。
+
+——我的晓银。
+
+第三章：坠海
+
+源点暴走的那一夜，郑晓银没有告诉任何人。
+
+她把最后一枚符文刻在自己掌心，用最后一次召唤，把张静茹唤到身边；又留下一缕银发，把他永远钉在了源点旧址。
+
+她成功了。
+
+源点封印，风暴平息。人类、变异生物、丧尸——三大种族第一次站在同一片天空下。
+
+而她坠进了那片灰蓝色的海，再没有上来。
+
+万梓茵站在废墟中央，看着远方的地平线。风暴散去后的天空呈现出一种奇异的浅紫色，像黎明与黄昏的交接。
+
+她知道张静茹在哪里。
+
+三天前，她最后一次用监测器捕捉到他的信号——源点旧址，那块三层楼高的源粒子结晶旁，他安静地坐着，翻着一本泛黄的诗集。周围是数以千计的丧尸，安静得像墓碑。
+
+而在他怀里，抱着一缕银发。
+
+那是万梓茵唯一的失误——她收集样本时漏掉了一缕，被他找到了。
+
+“晓银……”万梓茵闭上眼睛，将那缕银发从自己怀中取出，对着光看。银发在阳光下泛着冷光，像一截凝固的月光。
+
+“你成功了。”她低声说，“源点封印了，风暴平息了。人类、变异生物、丧尸，终于可以共存了。”
+
+她把银发收回怀里。
+
+“可你把自己弄丢了。而他……”
+
+她想起张静茹最后看她的眼神——空洞的、满足的、微笑的，像一个相信妈妈只是出去买东西、很快就会回来的孩子。
+
+“他疯了。”万梓茵轻声说，“但你要的就是这个，对吗？你活着封印源点，他活着……在你的记忆里活着。”
+
+她抬起头，看着浅紫色的天空。
+
+“你算计好了。从头到尾。”
+
+阳光落在她脸上，把三年的疲惫和尘埃映成金色。
+
+“我不会让你白费的。”她说，“这个地球，我会替你看着。”
+
+她转身走向正在重建的黎明城。
+
+“夜莺-01 净化器，”她对副官说，“改名为‘晓银’。”
+
+第四章：三年后
+
+三年后，万梓茵站在新世界首都——在黎明城旧址上重建的“黎明堡”——最高塔楼的阳台上。
+
+城市在她脚下延展。干净的道路，运转的净化器，人类与变异生物共存的社区，以及在外围巡逻的——丧尸。
+
+是的，丧尸。
+
+万梓茵用了一年时间证明，丧尸并非完全无法沟通。高阶丧尸拥有智慧，可以交流；普通丧尸在源粒子浓度降低后，攻击性大幅下降；而张静茹留下的尸群，在他消失后失去统一指挥，散落废墟，逐渐被万梓茵的部队收编。
+
+“万梓茵大人。”副官——不，现在该叫将军了——走到她身后，“三大种族的代表已经到了会议厅。”
+
+“嗯。”她转身。
+
+她的头发依然是浅褐色，扎成利落的马尾。但那双眼睛比三年前更深沉、更锐利，也更疲惫。
+
+会议厅里，人类、变异生物、丧尸的代表坐在同一张桌旁。这是历史上第一次。
+
+“三件事。”万梓茵在主位坐下，声音平稳，“第一，源粒子浓度已降至安全线以下，净化器网络覆盖全球 70% 区域。第二，三大种族通行协议正式生效。第三——”
+
+她顿了一下。
+
+“关于丧尸皇的搜索，第三年报告。”
+
+会议厅安静下来。
+
+“在源点旧址，监测器持续捕捉到丧尸皇的源粒子信号。他没有移动，没有攻击，没有扩张。他就……在那里。”
+
+“他还在？”人类代表低声问。
+
+永远都是同样的对话。三年了。他没有衰老，没有变化，没有疯狂——他太疯了，疯到极致，反而变成了一种永恒的平静。
+
+“我们要干预吗？”将军问。
+
+万梓茵沉默了很久。
+
+“不。”她最终说，“让他待在那里。”
+
+有些等待不需要被打扰。有些疯，不需要被治好。
+
+在源点旧址，那块三层楼高的结晶旁，丧尸皇依旧安静地坐着，膝上摊着一本泛黄的诗集，怀里抱着一缕银发。
+
+灰蓝色的雾霭早已散尽，可他眼里的那片海，从来没有退潮。`
+  }
+];
+
+/* ---- 内页卡片：只由 stories 生成（没有文章就不会出现空方块） ---- */
+const lifeCards = stories.map(s => {
+  const th = THEMES[s.theme] || THEMES['sci-fi'];
+  return {
+    id: s.id,
+    title: s.title,
+    subtitle: s.subtitle,
+    icon: s.icon,
+    color: th.color,
+    theme: s.theme
+  };
+});
+
+const grid = $('#grid');
+$('#card-count').textContent = lifeCards.length;
+
+lifeCards.forEach(c => {
+  const el = document.createElement('article');
+  el.className = 'life-card';
+  el.style.setProperty('--c', c.color);
+  el.dataset.id = c.id;
+  el.innerHTML = `
+    <div class="card-ico">${c.icon}</div>
+    <div class="card-txt">
+      <h3 class="card-title">${c.title}</h3>
+      <p class="card-sub">${c.subtitle}</p>
+    </div>
+    <span class="card-no">NO.${String(c.id).padStart(2, '0')}</span>
+  `;
+
+  /* --- 3D 倾斜（仅非触屏） --- */
+  if (!FX.mobile) {
+    el.addEventListener('mousemove', e => {
+      const r = el.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - .5;
+      const py = (e.clientY - r.top) / r.height - .5;
+      el.style.transform =
+        `perspective(800px) rotateY(${px * 14}deg) rotateX(${-py * 12}deg) translateZ(14px) scale(1.045)`;
+    });
+    el.addEventListener('mouseenter', () => {
+      const r = el.getBoundingClientRect();
+      FX.setHover(r.left + r.width / 2, r.top + r.height / 2);  // 粒子吸附
+    });
+    el.addEventListener('mouseleave', () => {
+      el.style.transform = '';
+      FX.setHover(null);
+    });
+  }
+
+  el.addEventListener('click', () => openArticle(c.id, el));
+  grid.appendChild(el);
+});
+
+/* ---- 内页入场：卡片逐张浮现 ---- */
+async function enterInner() {
+  showView('inner');
+  views.inner.animate(
+    [
+      { opacity: 0, transform: 'scale(1.14)', filter: 'blur(22px)' },
+      { opacity: 1, transform: 'scale(1)', filter: 'blur(0px)' }
+    ],
+    { duration: 820, easing: 'cubic-bezier(.16,1,.3,1)' }
+  );
+  const cards = [...grid.children];
+  cards.forEach((el, i) => {
+    el.animate(
+      [
+        { opacity: 0, transform: 'translateY(46px) rotateX(-38deg) scale(.86)' },
+        { opacity: 1, transform: 'translateY(0) rotateX(0) scale(1)' }
+      ],
+      { duration: 620, delay: 60 + i * 45, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' }
+    );
+  });
+}
+
+/* =========================================================================
+ * 七、文章页：渲染 / 进入 / 返回 / 主题切换
+ * ========================================================================= */
+const articlePanel = $('#article-panel');
+const aTag = $('#a-tag'), aTitle = $('#a-title'), aMeta = $('#a-meta');
+const aCast = $('#a-cast'), aHook = $('#a-hook'), aBody = $('#a-body');
+const readingBar = $('#reading-progress');
+const articleNext = $('#article-next');
+const themeFx = $('#theme-fx');
+
+let currentId = null;
+let animating = false;
+
+/** 简单 HTML 转义，避免正文里的尖括号破坏结构 */
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/**
+ * 切换全局主题：body class + CSS 变量 + 粒子配色 + 主题背景层
+ * @param {"sci-fi"|"mystery"|"warm"|"adventure"} name
+ */
+function applyTheme(name) {
+  const key = THEMES[name] ? name : 'sci-fi';
+  document.body.className = 'theme-' + key;
+  FX.setTheme(key);
+}
+
+/** 阅读进度条 */
+function updateProgress() {
+  const el = views.article;
+  const max = el.scrollHeight - el.clientHeight;
+  readingBar.style.width = (max > 0 ? (el.scrollTop / max) * 100 : 0).toFixed(2) + '%';
+}
+views.article.addEventListener('scroll', updateProgress, { passive: true });
+window.addEventListener('resize', updateProgress, { passive: true });
+
+/**
+ * 按 story 对象渲染整篇内容（标题 / 角色 / 钩子 / 正文）
+ */
+function renderArticle(s) {
+  const th = THEMES[s.theme] || THEMES['sci-fi'];
+  const wordCount = s.content.replace(/\s/g, '').length;
+
+  // 1) 头部
+  aTag.textContent = `${th.label} · ${th.name}`;
+  aTitle.textContent = s.title;
+  aMeta.innerHTML =
+    `模拟人生 · 第 <b>${String(s.id).padStart(2, '0')}</b> 段 ／ 主角 <b>${esc(s.protagonist.name)}</b> ／ 全文约 <b>${wordCount}</b> 字`;
+
+  // 2) 角色介绍：主角 + 配角
+  const castList = [
+    { role: '主角', lead: true, ...s.protagonist },
+    ...(s.supporting || []).map(x => ({ role: '配角', lead: false, ...x }))
+  ];
+  aCast.innerHTML = castList.map(c => `
+    <div class="cast-card${c.lead ? ' lead' : ''}">
+      <div class="avatar">${esc(c.name.slice(0, 1))}</div>
+      <div class="cast-info">
+        <span class="cast-role">${c.role}</span>
+        <h3 class="cast-name">${esc(c.name)}</h3>
+        <p class="cast-desc">${esc(c.personality)}</p>
+      </div>
+    </div>
+  `).join('');
+
+  // 3) 开头钩子
+  aHook.textContent = s.hook;
+
+  // 4) 正文：按空行分段；"第X章" 渲染为章节小标题；纯对话段落高亮
+  aBody.innerHTML = s.content.trim().split(/\n+/).map(t => {
+    const p = t.trim();
+    if (!p) return '';
+    if (/^第[一二三四五六七八九十百]+章/.test(p)) {
+      return `<h2 class="chapter">${esc(p)}</h2>`;
+    }
+    const isDialog = /^[“"『]/.test(p);
+    return `<p class="${isDialog ? 'dialogue' : ''}">${esc(p)}</p>`;
+  }).join('');
+
+  // 5) 多篇文章时才显示“下一段人生”
+  articleNext.hidden = stories.length < 2;
+
+  views.article.scrollTop = 0;
+  updateProgress();
+}
+
+/**
+ * 进入文章页：粒子吸入 + 径向光 + 模糊穿越
+ */
+async function openArticle(id, cardEl) {
+  if (animating) return;
+  animating = true;
+  const s = stories.find(x => x.id === id);
+  if (!s) { animating = false; return; }
+  currentId = id;
+
+  const th = THEMES[s.theme] || THEMES['sci-fi'];
+  // 主题先切换，让背景与粒子在穿越过程中渐变到本篇风格
+  applyTheme(s.theme);
+  themeFx.classList.add('show');
+
+  const r = cardEl.getBoundingClientRect();
+  const cxp = r.left + r.width / 2, cyp = r.top + r.height / 2;
+
+  // 1) 粒子吸入 + 径向光
+  FX.suckAt(cxp, cyp, 760);
+  FX.converge(cxp, cyp, FX.mobile ? 26 : 76);
+  pulseRing(cxp, cyp, th.color, 950, .85);
+
+  // 2) 卡片放大穿越
+  cardEl.style.zIndex = 9;
+  cardEl.animate(
+    [
+      { transform: 'scale(1)', opacity: 1, filter: 'brightness(1) blur(0px)' },
+      { transform: 'scale(1.18)', opacity: 1, filter: 'brightness(1.8) blur(1px)', offset: .3 },
+      { transform: 'scale(2.4)', opacity: 0, filter: 'brightness(3) blur(16px)' }
+    ],
+    { duration: 660, easing: 'cubic-bezier(.5,0,.9,.4)', fill: 'forwards' }
+  );
+
+  // 3) 内页模糊退场
+  await sleep(300);
+  views.inner.animate(
+    [
+      { opacity: 1, transform: 'scale(1)', filter: 'blur(0px)' },
+      { opacity: 0, transform: 'scale(.9)', filter: 'blur(18px)' }
+    ],
+    { duration: 560, easing: 'cubic-bezier(.4,0,.7,.4)', fill: 'forwards' }
+  );
+
+  await sleep(300);
+  flash(th.color, 720);
+  hideView(views.inner);
+  cardEl.style.zIndex = ''; cardEl.style.transform = ''; cardEl.style.opacity = '';
+  FX.setHover(null);
+
+  // 4) 渲染内容
+  clearAnims(articlePanel);
+  articlePanel.style.opacity = ''; articlePanel.style.transform = ''; articlePanel.style.filter = '';
+  renderArticle(s);
+
+  // 5) 文章页径向展开进入
+  showView('article');
+  articlePanel.animate(
+    [
+      { opacity: 0, transform: 'scale(.7) rotateX(26deg)', filter: 'blur(28px)' },
+      { opacity: 1, transform: 'scale(1) rotateX(0deg)', filter: 'blur(0px)' }
+    ],
+    { duration: 780, easing: 'cubic-bezier(.16,1,.3,1)' }
+  );
+  // 内部区块错落浮现
+  [$('.article-hero'), aCast, aHook, aBody].forEach((el, i) => {
+    if (!el) return;
+    el.animate(
+      [
+        { opacity: 0, transform: 'translateY(30px)' },
+        { opacity: 1, transform: 'translateY(0)' }
+      ],
+      { duration: 560, delay: 200 + i * 110, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' }
+    );
+  });
+
+  await sleep(520);
+  animating = false;
+}
+
+/**
+ * 返回内页：反向穿越（缩小 + 模糊 + 粒子外爆 + 淡入）
+ */
+async function backToInner() {
+  if (animating) return;
+  animating = true;
+
+  // 1) 文章页反向穿越
+  articlePanel.animate(
+    [
+      { opacity: 1, transform: 'scale(1)', filter: 'blur(0px)' },
+      { opacity: 0, transform: 'scale(.62) rotateX(-18deg)', filter: 'blur(24px)' }
+    ],
+    { duration: 560, easing: 'cubic-bezier(.5,0,.85,.4)', fill: 'forwards' }
+  );
+  views.article.animate(
+    [{ opacity: 1 }, { opacity: 0 }],
+    { duration: 560, easing: 'ease-in', fill: 'forwards' }
+  );
+
+  await sleep(200);
+  // 2) 反向粒子：从中心向外爆开
+  FX.burst(innerWidth / 2, innerHeight / 2, FX.mobile ? 30 : 70);
+  pulseRing(innerWidth / 2, innerHeight / 2, '139,92,246', 800, .8);
+
+  await sleep(360);
+  hideView(views.article);
+  // 恢复默认（科幻）主题
+  applyTheme('sci-fi');
+  themeFx.classList.remove('show');
+
+  // 3) 内页淡入
+  showView('inner');
+  views.inner.animate(
+    [
+      { opacity: 0, transform: 'scale(1.06)', filter: 'blur(16px)' },
+      { opacity: 1, transform: 'scale(1)', filter: 'blur(0px)' }
+    ],
+    { duration: 700, easing: 'cubic-bezier(.16,1,.3,1)' }
+  );
+  [...grid.children].forEach((el, i) => {
+    el.animate(
+      [
+        { opacity: 0, transform: 'translateY(18px) scale(.96)' },
+        { opacity: 1, transform: 'none' }
+      ],
+      { duration: 480, delay: i * 22, easing: 'ease-out', fill: 'backwards' }
+    );
+  });
+
+  await sleep(520);
+  animating = false;
+}
+
+/* ---- 按钮绑定 ---- */
+$('#article-back').addEventListener('click', backToInner);
+$('#article-back2').addEventListener('click', backToInner);
+// ESC 也可返回
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && currentView === 'article') backToInner();
+});
+
+/* ---- 切换下一段人生（原地翻转换肤，展示主题差异） ---- */
+articleNext.addEventListener('click', () => {
+  if (animating || stories.length < 2) return;
+  const idx = stories.findIndex(x => x.id === currentId);
+  const next = stories[(idx + 1) % stories.length];
+  articlePanel.animate(
+    [
+      { opacity: 1, transform: 'rotateY(0deg) scale(1)', filter: 'blur(0px)' },
+      { opacity: 0, transform: 'rotateY(62deg) scale(.92)', filter: 'blur(10px)', offset: .5 },
+      { opacity: 1, transform: 'rotateY(0deg) scale(1)', filter: 'blur(0px)' }
+    ],
+    { duration: 620, easing: 'cubic-bezier(.4,0,.3,1)' }
+  );
+  setTimeout(() => {
+    currentId = next.id;
+    applyTheme(next.theme);
+    renderArticle(next);
+    flash((THEMES[next.theme] || THEMES['sci-fi']).color, 620);
+  }, 300);
+});
+
+/* =========================================================================
+ * 八、启动
+ * ========================================================================= */
+FX.init();
+applyTheme('sci-fi');   // 初始（登录/主页/内页）使用科幻主题
+// 键盘回车已在 form submit 中生效；补充输入框回车
+[userInput, passInput].forEach(inp => {
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doLogin(); } });
+});
+// 首屏：粒子轻微汇聚到登录卡片
+setTimeout(() => {
+  const r = loginCard.getBoundingClientRect();
+  FX.converge(r.left + r.width / 2, r.top + r.height / 2, FX.mobile ? 12 : 34);
+}, 400);
+</script>
+</body>
+</html>

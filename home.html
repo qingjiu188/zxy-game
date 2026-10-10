@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#05060f" />
+<title>主页 · 郑晓银的模拟人生</title>
+
+<!-- 全局样式 + 主页样式 -->
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/home.css" />
+</head>
+<body class="theme-sci-fi">
+
+<!-- ===== 全局背景层（每页共用） ===== -->
+<div class="nebula"></div>
+<div id="theme-fx"></div>
+<canvas id="fx"></canvas>
+<div class="vignette"></div>
+
+<!-- ===== 特效层（每页共用） ===== -->
+<div class="fx-layer" id="fx-root"></div>
+<div class="fx-layer" id="flash"></div>
+
+<!-- ===== 视图：主页 ===== -->
+<section class="view on" id="view-home">
+  <h1 class="home-title" id="home-title"></h1>
+  <p class="home-sub">选择一段人生，进入模拟世界</p>
+  <div class="home-orbit">
+    <i></i><i></i><i></i>
+    <div class="core"></div>
+  </div>
+  <button class="start-btn" id="start-btn"><span>开 始 游 戏</span></button>
+</section>
+
+<!-- ===== 脚本：公共 → 页面 ===== -->
+<script src="js/fx.js"></script>
+<script src="js/data.js"></script>
+<script src="js/transition.js"></script>
+<script src="js/home.js"></script>
+</body>
+</html>

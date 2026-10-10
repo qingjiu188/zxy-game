@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#05060f" />
+<title>系统登录 · 郑晓银的模拟人生</title>
+
+<!-- 全局样式 + 登录页样式 -->
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/login.css" />
+</head>
+<body class="theme-sci-fi">
+
+<!-- ===== 全局背景层（每页共用） ===== -->
+<div class="nebula"></div>
+<div id="theme-fx"></div>
+<canvas id="fx"></canvas>
+<div class="vignette"></div>
+
+<!-- ===== 特效层（每页共用） ===== -->
+<div class="fx-layer" id="fx-root"></div>
+<div class="fx-layer" id="flash"></div>
+
+<!-- ===== 视图：登录页 ===== -->
+<section class="view on" id="view-login">
+  <div class="login-wrap">
+    <form class="login-card" id="login-card" autocomplete="off" novalidate>
+      <span class="corner tl"></span><span class="corner tr"></span>
+      <span class="corner bl"></span><span class="corner br"></span>
+
+      <div class="login-badge"><span class="dot"></span> SYSTEM LOGIN · 授权终端</div>
+      <h1 class="login-title">郑晓银的模拟人生</h1>
+      <p class="login-sub">SIMULATED LIFE ENGINE ／ 单人存档 · 禁止注册</p>
+
+      <div class="field" id="f-user">
+        <label for="username">账号 / ID</label>
+        <span class="ico">◈</span>
+        <input id="username" type="text" placeholder="请输入授权账号" autocomplete="off" spellcheck="false" />
+      </div>
+
+      <div class="field" id="f-pass">
+        <label for="password">密码 / KEY</label>
+        <span class="ico">◆</span>
+        <input id="password" type="password" placeholder="请输入访问密钥" autocomplete="new-password" />
+      </div>
+
+      <button class="login-btn" id="login-btn" type="submit"><span id="login-btn-text">进 入 系 统</span></button>
+      <p class="login-msg" id="login-msg"></p>
+      <!-- 安全提示：不在页面暴露任何账号 / 密码信息 -->
+      <p class="login-tip">凭授权账号与密钥进入 ／ 无注册入口</p>
+    </form>
+  </div>
+</section>
+
+<!-- ===== 脚本：公共 → 页面 ===== -->
+<script src="js/fx.js"></script>
+<script src="js/data.js"></script>
+<script src="js/transition.js"></script>
+<script src="js/login.js"></script>
+</body>
+</html>

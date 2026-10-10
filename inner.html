@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#05060f" />
+<title>人生列表 · 郑晓银的模拟人生</title>
+
+<!-- 全局样式 + 内页样式 -->
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/inner.css" />
+</head>
+<body class="theme-sci-fi">
+
+<!-- ===== 全局背景层（每页共用） ===== -->
+<div class="nebula"></div>
+<div id="theme-fx"></div>
+<canvas id="fx"></canvas>
+<div class="vignette"></div>
+
+<!-- ===== 特效层（每页共用） ===== -->
+<div class="fx-layer" id="fx-root"></div>
+<div class="fx-layer" id="flash"></div>
+
+<!-- ===== 视图：内页 ===== -->
+<section class="view on" id="view-inner">
+  <div class="inner-head">
+    <h2 class="inner-title">郑晓银的模拟人生</h2>
+    <p class="inner-sub">SELECT A LIFE ／ 共 <span id="card-count">0</span> 条人生支线</p>
+  </div>
+  <div class="grid" id="grid"></div>
+</section>
+
+<!-- ===== 脚本：公共 → 页面 ===== -->
+<script src="js/fx.js"></script>
+<script src="js/data.js"></script>
+<script src="js/transition.js"></script>
+<script src="js/inner.js"></script>
+</body>
+</html>
